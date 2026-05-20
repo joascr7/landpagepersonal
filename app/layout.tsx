@@ -13,9 +13,23 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+// Configuração de metadados atualizada para ler a sua logo.jpg na pasta public
 export const metadata: Metadata = {
-  title: "Consultoria Fitness - Personal Trainer",
-  description: "Seu treino personalizado na palma da mão.",
+  title: "PT Consultoria Fitness | Joás Vieira",
+  description: "Seu planejamento de treino de alta performance e consultoria personalizada na palma da sua mão.",
+  openGraph: {
+    title: "PT Consultoria Fitness | Joás Vieira",
+    description: "Seu planejamento de treino de alta performance e consultoria personalizada na palma da sua mão.",
+    type: "website",
+    images: [
+      {
+        url: "/logo.jpg", // O Next.js busca automaticamente dentro da pasta public
+        width: 1200,
+        height: 630,
+        alt: "PT Consultoria Fitness",
+      },
+    ],
+  },
 };
 
 export default function RootLayout({
@@ -26,7 +40,7 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" className="scroll-smooth">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-neutral-950 text-white min-h-screen flex flex-col justify-between`}>
-        <div>
+        <div className="w-full">
           {children}
         </div>
         {/* O Footer vai aparecer automaticamente no final de todas as páginas */}
