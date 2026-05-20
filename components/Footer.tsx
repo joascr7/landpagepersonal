@@ -1,10 +1,12 @@
 import Link from "next/link";
+import { LinksEImagens } from "../dados"; // Importando o Painel de Controle
 
 export default function Footer() {
+  const whatsappUrl = `https://wa.me/${LinksEImagens.whatsappNumero}?text=${encodeURIComponent(LinksEImagens.whatsappTexto)}`;
+
   return (
     <footer className="bg-neutral-950 border-t border-neutral-900 text-neutral-400 py-12 md:py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-8 mb-12">
           
           {/* Coluna 1: Sobre e Contato */}
@@ -19,78 +21,46 @@ export default function Footer() {
             <div className="space-y-3">
               <h3 className="text-white font-bold text-sm uppercase tracking-wider">Entre em contato</h3>
               
-              {/* WhatsApp */}
-              <a 
-                href="https://wa.me/55NUMERO" 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="text-sm flex items-center gap-2 hover:text-green-500 text-neutral-400 transition-colors group"
-              >
+              {/* WhatsApp Dinâmico */}
+              <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="text-sm flex items-center gap-2 hover:text-green-500 text-neutral-400 transition-colors group">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" className="text-neutral-400 group-hover:text-green-500 transition-colors">
                   <path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.69-4.294c-.217-.109-1.283-.634-1.482-.707-.198-.074-.342-.109-.487.11-.145.217-.56.707-.686.852-.127.145-.253.163-.47.054-.218-.11-.922-.34-1.754-1.082-.647-.578-1.083-1.293-1.21-1.51-.127-.217-.014-.334.096-.442.1-.099.217-.253.325-.38.108-.127.145-.218.217-.362.073-.145.037-.272-.018-.38-.055-.109-.487-1.177-.667-1.61-.177-.432-.37-.373-.487-.379-.113-.005-.242-.006-.37-.006-.127 0-.335.048-.51.24-.175.192-.667.653-.667 1.593 0 .94.684 1.848.78 1.976.096.128 1.345 2.053 3.259 2.877.455.196.81.314 1.086.402.457.145.874.124 1.205.075.369-.054 1.283-.524 1.463-1.03.18-.507.18-.941.127-1.03-.054-.09-.2-.144-.417-.254z"/>
                 </svg>
-                +55 (DDD) XXXXX-XXXX
+                {LinksEImagens.whatsappNumero}
               </a>
 
-              {/* Gmail/E-mail com ícone oficial em SVG */}
-              <a 
-                href="mailto:contato@seudominio.com.br"
-                className="text-sm flex items-center gap-2 hover:text-red-400 text-neutral-400 transition-colors group"
-              >
+              {/* Gmail Dinâmico */}
+              <a href={`mailto:${LinksEImagens.gmailContato}`} className="text-sm flex items-center gap-2 hover:text-red-400 text-neutral-400 transition-colors group">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" className="text-neutral-400 group-hover:text-red-400 transition-colors">
                   <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1zm13 2.383-4.708 2.825L15 11.105zm-.034 6.876-5.64-3.471L8 9.583l-1.326-.795-5.64 3.47A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.741M1 11.105l4.708-2.897L1 5.383z"/>
                 </svg>
-                contato@seudominio.com.br
+                {LinksEImagens.gmailContato}
               </a>
             </div>
           </div>
 
-          {/* Coluna 2: Links Úteis */}
+          {/* Coluna 2 */}
           <div>
             <h3 className="text-white font-bold text-lg mb-4">Links úteis</h3>
             <ul className="space-y-2 text-sm font-medium">
-              <li>
-                <Link href="/#como-funciona" className="hover:text-white transition-colors">
-                  Consultoria Personalizada
-                </Link>
-              </li>
-              <li>
-                <Link href="/planilhas-prontas" className="hover:text-white transition-colors">
-                  Planilhas Prontas para Começar
-                </Link>
-              </li>
-              <li>
-                <Link href="/loja" className="hover:text-white transition-colors">
-                  Acessar Loja Virtual
-                </Link>
-              </li>
+              <li><Link href="/#como-funciona" className="hover:text-white transition-colors">Consultoria Personalizada</Link></li>
+              <li><Link href="/planilhas-prontas" className="hover:text-white transition-colors">Planilhas Prontas para Começar</Link></li>
+              <li><Link href="/loja" className="hover:text-white transition-colors">Acessar Loja Virtual</Link></li>
             </ul>
           </div>
 
-          {/* Coluna 3: Redes Sociais e Selo de Garantia */}
+          {/* Coluna 3 */}
           <div className="space-y-6">
             <div>
               <h3 className="text-white font-bold text-lg mb-4">Siga-me nas redes sociais</h3>
               <div className="flex items-center gap-4">
-                
-                {/* Ícone do Instagram */}
-                <a 
-                  href="https://instagram.com/SEU_USER" 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
-                  className="w-10 h-10 rounded-full bg-neutral-900 border border-neutral-800 flex items-center justify-center hover:bg-neutral-800 text-neutral-400 hover:text-white transition-colors"
-                  title="Instagram"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
-                    <path d="M8 0C5.829 0 5.556.01 4.703.048 3.85.088 3.269.222 2.76.42a3.9 3.9 0 0 0-1.417.923A3.9 3.9 0 0 0 .42 2.76C.222 3.268.087 3.85.048 4.7.01 5.555 0 5.827 0 8.001c0 2.174.01 2.444.048 3.297.04.852.174 1.433.372 1.942.205.526.478.972.923 1.417.444.445.89.719 1.416.923.51.198 1.09.333 1.942.372C5.555 15.99 5.827 16 8 16s2.444-.01 3.298-.048c.851-.04 1.434-.174 1.943-.372a3.9 3.9 0 0 0 1.416-.923c.445-.445.718-.891.923-1.417.197-.509.332-1.09.372-1.942C15.99 10.445 16 10.173 16 8s-.01-2.445-.048-3.299c-.04-.851-.175-1.433-.372-1.941a3.9 3.9 0 0 0-.923-1.417A3.9 3.9 0 0 0 13.24.42c-.51-.198-1.092-.333-1.943-.372C10.443.01 10.172 0 7.999 0zm-.08 1.44h.08c2.113 0 2.36.007 3.194.046.78.035 1.204.166 1.486.275.373.145.64.319.92.599s.453.546.598.92c.11.281.24.705.275 1.485.039.843.047 1.096.047 3.231s-.008 2.389-.047 3.232c-.035.78-.166 1.203-.275 1.485a2.5 2.5 0 0 1-.599.919c-.28.28-.546.453-.92.598-.28.11-.704.24-1.485.276-.843.038-1.096.047-3.232.047s-2.39-.009-3.233-.047c-.78-.036-1.203-.166-1.485-.276a2.5 2.5 0 0 1-.92-.598 2.5 2.5 0 0 1-.6-.92c-.109-.281-.24-.705-.275-1.485-.038-.843-.046-1.096-.046-3.233s.008-2.388.046-3.231c.036-.78.166-1.204.276-1.486.145-.373.319-.64.599-.92s.546-.453.92-.598c.282-.11.705-.24 1.485-.276.738-.034 1.024-.044 2.515-.045zm4.988 1.328a.96.96 0 1 0 0 1.92.96.96 0 0 0 0-1.92m-4.27 1.122a4.109 4.109 0 1 0 0 8.217 4.109 4.109 0 0 0 0-8.217m0 1.441a2.667 2.667 0 1 1 0 5.334 2.667 2.667 0 0 1 0-5.334"/>
-                  </svg>
+                <a href={LinksEImagens.instagramLink} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-neutral-900 border border-neutral-800 flex items-center justify-center hover:bg-neutral-800 text-neutral-400 hover:text-white transition-colors">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16"><path d="M8 0C5.829 0 5.556.01 4.703.048 3.85.088 3.269.222 2.76.42a3.9 3.9 0 0 0-1.417.923A3.9 3.9 0 0 0 .42 2.76C.222 3.268.087 3.85.048 4.7.01 5.555 0 5.827 0 8.001c0 2.174.01 2.444.048 3.297.04.852.174 1.433.372 1.942.205.526.478.972.923 1.417.444.445.89.719 1.416.923.51.198 1.09.333 1.942.372C5.555 15.99 5.827 16 8 16s2.444-.01 3.298-.048c.851-.04 1.434-.174 1.943-.372a3.9 3.9 0 0 0 1.416-.923c.445-.445.718-.891.923-1.417.197-.509.332-1.09.372-1.942C15.99 10.445 16 10.173 16 8s-.01-2.445-.048-3.299c-.04-.851-.175-1.433-.372-1.941a3.9 3.9 0 0 0-.923-1.417A3.9 3.9 0 0 0 13.24.42c-.51-.198-1.092-.333-1.943-.372C10.443.01 10.172 0 7.999 0zm-.08 1.44h.08c2.113 0 2.36.007 3.194.046.78.035 1.204.166 1.486.275.373.145.64.319.92.599s.453.546.598.92c.11.281.24.705.275 1.485.039.843.047 1.096.047 3.231s-.008 2.389-.047 3.232c-.035.78-.166 1.203-.275 1.485a2.5 2.5 0 0 1-.599.919c-.28.28-.546.453-.92.598-.28.11-.704.24-1.485.276-.843.038-1.096.047-3.232.047s-2.39-.009-3.233-.047c-.78-.036-1.203-.166-1.485-.276a2.5 2.5 0 0 1-.92-.598 2.5 2.5 0 0 1-.6-.92c-.109-.281-.24-.705-.275-1.485-.038-.843-.046-1.096-.046-3.233s.008-2.388.046-3.231c.036-.78.166-1.204.276-1.486.145-.373.319-.64.599-.92s.546-.453.92-.598c.282-.11.705-.24 1.485-.276.738-.034 1.024-.044 2.515-.045zm4.988 1.328a.96.96 0 1 0 0 1.92.96.96 0 0 0 0-1.92m-4.27 1.122a4.109 4.109 0 1 0 0 8.217 4.109 4.109 0 0 0 0-8.217m0 1.441a2.667 2.667 0 1 1 0 5.334 2.667 2.667 0 0 1 0-5.334"/></svg>
                 </a>
-
-
               </div>
             </div>
 
-            {/* Selo de Garantia de 7 Dias */}
+            {/* Selo de Garantia */}
             <div className="inline-flex items-center gap-4 bg-neutral-900/50 border border-neutral-800 p-4 rounded-xl max-w-xs">
               <div className="w-12 h-12 rounded-full bg-amber-500/10 border border-amber-500/30 flex flex-col items-center justify-center text-amber-500 font-mono select-none">
                 <span className="text-lg font-black leading-none">7</span>
@@ -98,18 +68,16 @@ export default function Footer() {
               </div>
               <div>
                 <p className="text-white font-bold text-sm tracking-tight">GARANTIA INCONDICIONAL</p>
-                <p className="text-neutral-500 text-xs">Risco zero para o seu investmento.</p>
+                <p className="text-neutral-500 text-xs">Risco zero para o seu investimento.</p>
               </div>
             </div>
           </div>
 
         </div>
 
-        {/* Linha de Direitos Autorais */}
         <div className="border-t border-neutral-900 pt-8 text-center text-xs text-neutral-600">
           <p>© {new Date().getFullYear()} Consultoria Fitness. Todos os direitos reservados.</p>
         </div>
-
       </div>
     </footer>
   );
