@@ -5,21 +5,21 @@ import { LinksEImagens } from "../../dados"; // Importando o Painel de Controle
 const consultorias = [
   {
     name: "180 DIAS (6 PLANILHAS)",
-    price: "R$ 477,00",
+    price: LinksEImagens.precoConsultoria180Dias + ",00", // Dinâmico puxando do painel
     description: "Consultoria personalizada de longo prazo com o melhor custo-benefício.",
     badge: "Sale",
-    checkoutUrl: LinksEImagens.checkoutConsultoria180Dias, // Puxando do painel
+    checkoutUrl: LinksEImagens.checkoutConsultoria180Dias, 
   },
   {
     name: "90 DIAS (3 PLANILHAS)",
-    price: "R$ 277,00",
+    price: LinksEImagens.precoConsultoria90Dias + ",00", // Dinâmico puxando do painel
     description: "Acompanhamento focado em evolução e constância por 3 meses.",
     badge: "Sale",
     checkoutUrl: LinksEImagens.checkoutConsultoria90Dias,
   },
   {
     name: "30 DIAS (1 PLANILHA)",
-    price: "R$ 137,00",
+    price: LinksEImagens.precoConsultoria30Dias + ",00", // Dinâmico puxando do painel
     description: "Plano mensal para você dar o primeiro passo na metodologia.",
     badge: "Sale",
     checkoutUrl: LinksEImagens.checkoutConsultoria30Dias,
@@ -31,7 +31,7 @@ export default function LojaPage() {
     {
       name: "Planilha de musculação para HOMENS com objetivo de EMAGRECIMENTO",
       oldPrice: "R$ 277,00",
-      price: "R$ 47,00",
+      price: LinksEImagens.precoPlanilhasProntas + ",00", // Dinâmico puxando do painel
       category: "Planilhas prontas",
       badge: "Sale",
       img: LinksEImagens.planilhaEmagrecimentoHomem.imagem,
@@ -40,7 +40,7 @@ export default function LojaPage() {
     {
       name: "Planilha de TREINAMENTO EM CASA (Sem equipamentos)",
       oldPrice: "R$ 277,00",
-      price: "R$ 47,00",
+      price: LinksEImagens.precoPlanilhasProntas + ",00", // Dinâmico puxando do painel
       category: "Planilhas prontas",
       badge: "Sale",
       img: LinksEImagens.planilhaTreinoEmCasa.imagem,
@@ -49,7 +49,7 @@ export default function LojaPage() {
     {
       name: "Planilha com TÉCNICAS AVANÇADAS de treinamento para MULHERES",
       oldPrice: "R$ 277,00",
-      price: "R$ 47,00",
+      price: LinksEImagens.precoPlanilhasProntas + ",00", // Dinâmico puxando do painel
       category: "Planilhas prontas",
       badge: "Sale",
       img: LinksEImagens.planilhaAvancadoMulher.imagem,
@@ -58,7 +58,7 @@ export default function LojaPage() {
     {
       name: "Planilha com TÉCNICAS AVANÇADAS de treinamento para HOMENS",
       oldPrice: "R$ 277,00",
-      price: "R$ 47,00",
+      price: LinksEImagens.precoPlanilhasProntas + ",00", // Dinâmico puxando do painel
       category: "Planilhas prontas",
       badge: "Sale",
       img: LinksEImagens.planilhaAvancadoHomem.imagem,
@@ -98,15 +98,15 @@ export default function LojaPage() {
           </div>
         </div>
 
-        {/* Planilhas Prontas */}
-        <div>
+        {/* Planilhas Prontas com ID e scroll-mt configurados */}
+        <div id="planilhas" className="scroll-mt-28">
           <div className="text-center mb-12">
             <h2 className="text-2xl font-black uppercase tracking-tight text-neutral-950">Planilhas Prontas</h2>
             <div className="w-12 h-1 bg-amber-500 mx-auto mt-2"></div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {planilhasProntas.map((item, idx) => (
-              <div key={idx} className="bg-white border border-neutral-200 rounded-2xl overflow-hidden shadow-sm p-4 flex flex-col justify-between">
+              <div key={idx} className="bg-white border border-neutral-200 rounded-2xl overflow-hidden shadow-sm p-4 flex flex-col justify-between relative">
                 <span className="absolute top-6 right-6 bg-blue-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase z-10">{item.badge}</span>
                 <div>
                   <div className="h-40 w-full rounded-xl overflow-hidden relative mb-4">

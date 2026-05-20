@@ -1,5 +1,6 @@
-import Navbar from "@/components/Navbar";
+import Navbar from "../../components/Navbar";
 import Link from "next/link";
+import { LinksEImagens } from "../../dados"; // Importando o Painel de Controle
 
 export default function PlanilhasProntasPage() {
   const checkmarks = [
@@ -32,13 +33,13 @@ export default function PlanilhasProntasPage() {
             ))}
           </ul>
 
+          {/* Botão direcionando para a seção de planilhas na loja com preço dinâmico */}
           <div className="mt-10">
             <Link
-              href="https://pay.kiwify.com.br/LINK_DA_PLANILHA_GERAL"
-              target="_blank"
+              href="/loja#planilhas"
               className="inline-block px-10 py-4 bg-orange-600 hover:bg-orange-700 text-white font-black text-sm uppercase tracking-wider rounded-full shadow-lg shadow-orange-600/20 transition-transform hover:scale-105"
             >
-              Apenas R$47!
+              Apenas {LinksEImagens.precoPlanilhasProntas}!
             </Link>
           </div>
         </div>
@@ -46,7 +47,7 @@ export default function PlanilhasProntasPage() {
         {/* Lado Direito: Imagem dos Celulares com o App MFit */}
         <div className="flex-1 flex justify-center relative w-full max-w-md md:max-w-lg">
           <img
-            src="https://images.unsplash.com/photo-1510557880182-3d4d3cba35a5?auto=format&fit=crop&w=600&q=80" // Mockup provisório que você pode trocar pelo print do MFit depois
+            src="https://images.unsplash.com/photo-1510557880182-3d4d3cba35a5?auto=format&fit=crop&w=600&q=80"
             alt="Aplicativo MFit Treinos"
             className="w-full max-w-[420px] object-contain drop-shadow-2xl"
           />
