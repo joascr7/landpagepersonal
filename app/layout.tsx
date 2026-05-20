@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-// Configuração de metadados corrigida e sem erros de sintaxe
+// Configuração completa e corrigida de metadados
 export const metadata: Metadata = {
   title: "PT Consultoria Fitness | Joás Vieira",
   description: "Seu planejamento de treino de alta performance e consultoria personalizada na palma da sua mão.",
@@ -23,14 +23,14 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "/logo.jpg", // Busca automaticamente dentro da pasta public
+        url: "/logo.jpg", // Certifique-se de que a imagem está na pasta public com este nome exato
         width: 1200,
         height: 630,
         alt: "PT Consultoria Fitness",
       },
-    ], // Apenas uma vírgula aqui para fechar a propriedade interna
-  }, // Fecha o openGraph
-}; // Fecha o metadata por completo
+    ],
+  },
+};
 
 export default function RootLayout({
   children,
