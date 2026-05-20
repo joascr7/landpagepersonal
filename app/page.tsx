@@ -4,8 +4,8 @@ import ObjectivesSection from "@/components/ObjectivesSection";
 import AppSection from "@/components/AppSection";
 import FeaturesSection from "@/components/FeaturesSection";
 import AboutSection from "@/components/AboutSection";
-import PricingSection from "@/components/PricingSection";
-import FaqSection from "@/components/FaqSection";
+import PricingSection from "../components/PricingSection";
+import FaqSection from "../components/FaqSection";
 
 export default function Home() {
   return (
