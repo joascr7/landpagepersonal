@@ -4,7 +4,7 @@ export default function PricingSection() {
   const plans = [
     {
       name: "Plano Mensal",
-      price: "R$ 137", // Mudado para o valor da loja/Kiwify
+      price: LinksEImagens.precoConsultoria30Dias, // Puxando o valor dinâmico
       period: "/mês",
       description: "Ideal para quem quer testar a metodologia e começar a ver os primeiros resultados.",
       features: [
@@ -15,11 +15,11 @@ export default function PricingSection() {
       ],
       buttonText: "Começar Agora",
       highlight: false,
-      checkoutUrl: LinksEImagens.checkoutConsultoria30Dias, // Puxando do dados.ts
+      checkoutUrl: LinksEImagens.checkoutConsultoria30Dias,
     },
     {
       name: "Plano Trimestral",
-      price: "R$ 277", // Mudado para o valor da loja/Kiwify
+      price: LinksEImagens.precoConsultoria90Dias, // Puxando o valor dinâmico
       period: "/trimestre",
       description: "O campeão de vendas. Perfeito para quem busca uma mudança estética real e consistente.",
       features: [
@@ -31,11 +31,11 @@ export default function PricingSection() {
       ],
       buttonText: "Garantir Vaga",
       highlight: true,
-      checkoutUrl: LinksEImagens.checkoutConsultoria90Dias, // Puxando do dados.ts
+      checkoutUrl: LinksEImagens.checkoutConsultoria90Dias,
     },
     {
       name: "Plano Semestral",
-      price: "R$ 477", // Mudado para o valor da loja/Kiwify
+      price: LinksEImagens.precoConsultoria180Dias, // Puxando o valor dinâmico
       period: "/semestre",
       description: "Foco em alta performance e mudança de estilo de vida a longo prazo.",
       features: [
@@ -46,7 +46,7 @@ export default function PricingSection() {
       ],
       buttonText: "Assinar Premium",
       highlight: false,
-      checkoutUrl: LinksEImagens.checkoutConsultoria180Dias, // Puxando do dados.ts
+      checkoutUrl: LinksEImagens.checkoutConsultoria180Dias,
     },
   ];
 
