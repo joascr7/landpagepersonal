@@ -7,7 +7,7 @@ export const LinksEImagens = {
 
   // --- LINKS DE PAGAMENTO DA CONSULTORIA (HOME E LOJA) ---
   checkoutConsultoria180Dias: "https://pay.kiwify.com.br/SEU_LINK_180",
-  checkoutConsultoria90Dias: "https://pay.kiwify.com.br/SEU_LINK_90",
+  checkoutConsultoria90Dias: "https://pay.kiwify.com.br/9tyA40s",
   checkoutConsultoria30Dias: "https://pay.kiwify.com.br/SEU_LINK_30",
 
   // --- LINKS E IMAGENS DAS PLANILHAS PRONTAS (R$ 47,00) ---
