@@ -1,4 +1,7 @@
+import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
+import ObjectivesSection from "@/components/ObjectivesSection";
+import AppSection from "@/components/AppSection";
 import FeaturesSection from "@/components/FeaturesSection";
 import AboutSection from "@/components/AboutSection";
 import PricingSection from "@/components/PricingSection";
@@ -6,25 +9,31 @@ import FaqSection from "@/components/FaqSection";
 
 export default function Home() {
   return (
-    <main className="bg-neutral-950 text-white min-h-screen font-sans selection:bg-amber-500 selection:text-neutral-950 overflow-x-hidden">
+    <main className="bg-neutral-950 text-white min-h-screen font-sans selection:bg-amber-500 selection:text-neutral-950 overflow-x-hidden scroll-smooth">
       
-      {/* 1. Promessa e Foto Principal */}
+      {/* O Menu Superior Fixo */}
+      <Navbar />
+      
+      {/* Seções com IDs para âncora de rolagem */}
       <HeroSection />
       
-      {/* 2. Como Funciona o Método */}
+      <div id="como-funciona">
+        <ObjectivesSection />
+      </div>
+      
+      <div id="app">
+        <AppSection />
+      </div>
+      
       <FeaturesSection />
       
-      {/* 3. Quem é o Profissional (Autoridade/CREF) */}
       <AboutSection />
       
-      {/* 4. Tabela de Preços e Checkout */}
       <div id="precos" className="py-20 md:py-32 border-t border-neutral-900 bg-neutral-950">
         <PricingSection />
       </div>
-
-      {/* 5. Quebra de Objeções Finas */}
-      <FaqSection />
       
+      <FaqSection />
     </main>
   );
 }
