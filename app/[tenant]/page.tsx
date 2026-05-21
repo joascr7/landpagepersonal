@@ -6,7 +6,7 @@ import FeaturesSection from "@/components/FeaturesSection";
 import AboutSection from "@/components/AboutSection";
 import PricingSection from "@/components/PricingSection";
 import FaqSection from "@/components/FaqSection";
-import Footer from "@/components/Footer"; // Importação do Footer adicionada!
+import Footer from "@/components/Footer"; 
 
 import { supabase } from "@/lib/supabase";
 import { notFound } from "next/navigation";
@@ -32,33 +32,38 @@ export default async function Home({ params }: PageProps) {
   }
 
   return (
-    <main className="bg-neutral-950 text-white min-h-screen font-sans selection:bg-amber-500 selection:text-neutral-950 overflow-x-hidden scroll-smooth">
+    <main className="bg-neutral-950 text-white min-h-screen font-sans selection:bg-amber-500 selection:text-neutral-950 overflow-x-hidden scroll-smooth relative">
       
-      {/* O Menu Superior Fixo - Passando os dados do banco */}
+      {/* O Menu Superior Fixo - Fica isolado na camada z-50 de controle */}
       <Navbar cliente={cliente} />
       
-      {/* Seções com IDs para âncora de rolagem - Passando os dados do banco */}
-      <HeroSection cliente={cliente} />
-      
-      <div id="como-funciona">
-        <ObjectivesSection cliente={cliente} />
-      </div>
-      
-      <div id="app">
-        <AppSection cliente={cliente} />
-      </div>
-      
-      <FeaturesSection cliente={cliente} />
-      
-      <AboutSection cliente={cliente} />
-      
-      <div id="precos" className="py-20 md:py-32 border-t border-neutral-900 bg-neutral-950">
-        <PricingSection cliente={cliente} />
-      </div>
-      
-      <FaqSection cliente={cliente} />
+      {/* 🔥 CORREÇÃO GLOBAL DE CLIQUES: Esta div envelopa todo o miolo do site, 
+          forçando a captura do mouse e garantindo que o checkout funcione de primeira! */}
+      <div className="relative z-10 w-full pointer-events-auto block">
+        
+        <HeroSection cliente={cliente} />
+        
+        <div id="como-funciona">
+          <ObjectivesSection cliente={cliente} />
+        </div>
+        
+        <div id="app">
+          <AppSection cliente={cliente} />
+        </div>
+        
+        <FeaturesSection cliente={cliente} />
+        
+        <AboutSection cliente={cliente} />
+        
+        <div id="precos" className="py-20 md:py-32 border-t border-neutral-900 bg-neutral-950">
+          <PricingSection cliente={cliente} />
+        </div>
+        
+        <FaqSection cliente={cliente} />
 
-      {/* O Rodapé Dinâmico - Adicionado aqui no final! */}
+      </div>
+
+      {/* O Rodapé Dinâmico - Mantido na base do layout */}
       <Footer cliente={cliente} />
     </main>
   );
