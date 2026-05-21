@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Footer from "@/components/Footer"; // Importando o rodapé
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -13,23 +12,10 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-// Configuração completa e corrigida de metadados
+// Metadados genéricos para a raiz do seu SaaS
 export const metadata: Metadata = {
-  title: "PT Consultoria Fitness | Joás Vieira",
-  description: "Seu planejamento de treino de alta performance e consultoria personalizada na palma da sua mão.",
-  openGraph: {
-    title: "PT Consultoria Fitness | Joás Vieira",
-    description: "Seu planejamento de treino de alta performance e consultoria personalizada na palma da sua mão.",
-    type: "website",
-    images: [
-      {
-        url: "/logo.jpg", // Certifique-se de que a imagem está na pasta public com este nome exato
-        width: 1200,
-        height: 630,
-        alt: "PT Consultoria Fitness",
-      },
-    ],
-  },
+  title: "Plataforma SaaS | Suas Páginas em Alto Nível",
+  description: "Crie e gerencie suas landing pages profissionais de prestação de serviços.",
 };
 
 export default function RootLayout({
@@ -43,8 +29,7 @@ export default function RootLayout({
         <div className="w-full">
           {children}
         </div>
-        {/* O Footer vai aparecer automaticamente no final de todas as páginas */}
-        <Footer />
+        {/* O Footer foi removido daqui porque agora ele é renderizado dinamicamente dentro de cada página passando o cliente */}
       </body>
     </html>
   );

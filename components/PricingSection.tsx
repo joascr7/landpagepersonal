@@ -1,13 +1,33 @@
-import { LinksEImagens } from "../dados";
+// 1. Removemos a importação fixa do arquivo dados.ts
 
-export default function PricingSection() {
+interface PricingSectionProps {
+  cliente: any; // Recebe os dados dinâmicos do cliente vindos da página
+}
+
+export default function PricingSection({ cliente }: PricingSectionProps) {
+  // Define se o nicho é estética ou fitness para adaptar os textos das features
+  const ehEstetica = cliente.nicho === "estetica";
+
+  // Mapeia dinamicamente as cores do sistema com base no cadastro do cliente
+  const corTexto = ehEstetica ? "text-pink-500" : "text-amber-500";
+  const corBorda = ehEstetica ? "border-pink-500 shadow-pink-500/5" : "border-amber-500 shadow-amber-500/5";
+  const corBotao = ehEstetica ? "bg-pink-500 hover:bg-pink-400" : "bg-amber-500 hover:bg-amber-400";
+  const corSelecao = ehEstetica ? "bg-pink-500" : "bg-amber-500";
+
   const plans = [
     {
-      name: "Plano Mensal",
-      price: LinksEImagens.precoConsultoria30Dias, // Puxando o valor dinâmico
+      name: ehEstetica ? "Pacote Mensal" : "Plano Mensal",
+      price: cliente.preco_consultoria_30_dias, // Banco de Dados
       period: "/mês",
-      description: "Ideal para quem quer testar a metodologia e começar a ver os primeiros resultados.",
-      features: [
+      description: ehEstetica 
+        ? "Ideal para manter suas unhas perfeitas com manutenção regular garantida."
+        : "Ideal para quem quer testar a metodologia e começar a ver os primeiros resultados.",
+      features: ehEstetica ? [
+        "Aplicação Completa em Gel",
+        "Suporte para reparos via WhatsApp",
+        "Garantia de atendimento prioritário",
+        "Dicas de cuidados pós-procedimento"
+      ] : [
         "Treino personalizado via Aplicativo",
         "Suporte via WhatsApp 1x por semana",
         "Ajuste de treino a cada 30 dias",
@@ -15,14 +35,22 @@ export default function PricingSection() {
       ],
       buttonText: "Começar Agora",
       highlight: false,
-      checkoutUrl: LinksEImagens.checkoutConsultoria30Dias,
+      checkoutUrl: cliente.checkout_30_dias, // Banco de Dados
     },
     {
-      name: "Plano Trimestral",
-      price: LinksEImagens.precoConsultoria90Dias, // Puxando o valor dinâmico
+      name: ehEstetica ? "Plano Trimestral Recorrente" : "Plano Trimestral",
+      price: cliente.preco_consultoria_90_dias, // Banco de Dados
       period: "/trimestre",
-      description: "O campeão de vendas. Perfeito para quem busca uma mudança estética real e consistente.",
-      features: [
+      description: ehEstetica
+        ? "O mais assinado. Perfeito para garantir o autocuidado contínuo com desconto."
+        : "O campeão de vendas. Perfeito para quem busca uma mudança estética real e consistente.",
+      features: ehEstetica ? [
+        "Manutenções inclusas no trimestre",
+        "Suporte prioritário via WhatsApp (Seg a Sex)",
+        "Reparos de emergência sem custo extra",
+        "Guia de fortalecimento de unhas",
+        "Desconto exclusivo na renovação"
+      ] : [
         "Treino personalizado via Aplicativo",
         "Suporte prioritário via WhatsApp (Seg a Sex)",
         "Ajustes de treino sempre que necessário",
@@ -31,31 +59,38 @@ export default function PricingSection() {
       ],
       buttonText: "Garantir Vaga",
       highlight: true,
-      checkoutUrl: LinksEImagens.checkoutConsultoria90Dias,
+      checkoutUrl: cliente.checkout_90_dias, // Banco de Dados
     },
     {
-      name: "Plano Semestral",
-      price: LinksEImagens.precoConsultoria180Dias, // Puxando o valor dinâmico
+      name: ehEstetica ? "Plano VIP Semestral" : "Plano Semestral",
+      price: cliente.preco_consultoria_180_dias, // Banco de Dados
       period: "/semestre",
-      description: "Foco em alta performance e mudança de estilo de vida a longo prazo.",
-      features: [
+      description: ehEstetica
+        ? "Foco em unhas impecáveis o ano todo com tratamento premium completo."
+        : "Foco em alta performance e mudança de estilo de vida a longo prazo.",
+      features: ehEstetica ? [
+        "Tudo do plano Trimestral",
+        "Blindagem e spa dos pés inclusos",
+        "Horários fixos reservados na agenda",
+        "Acesso a mimos exclusivos do Studio"
+      ] : [
         "Tudo do plano Trimestral",
         "Análise de exames/anamnese ultra detalhada",
         "Call individual de alinhamento de 30min",
         "Acesso a comunidade exclusiva de alunos"
       ],
-      buttonText: "Assinar Premium",
+      buttonText: ehEstetica ? "Assinar VIP" : "Assinar Premium",
       highlight: false,
-      checkoutUrl: LinksEImagens.checkoutConsultoria180Dias,
+      checkoutUrl: cliente.checkout_180_dias, // Banco de Dados
     },
   ];
 
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="text-center max-w-3xl mx-auto mb-16">
-        <h2 className="text-xs font-bold text-amber-500 uppercase tracking-widest">Preços</h2>
+        <h2 className={`text-xs font-bold ${corTexto} uppercase tracking-widest`}>Preços</h2>
         <p className="mt-2 text-4xl font-black text-white sm:text-5xl tracking-tight max-w-xl mx-auto leading-tight">
-          Invista no seu corpo e na sua saúde
+          {ehEstetica ? "Escolha o seu plano de beleza" : "Invista no seu corpo e na sua saúde"}
         </p>
         <p className="mt-4 text-base text-neutral-400 max-w-xl mx-auto">
           Escolha o plano ideal para os seus objetivos. Sem taxas escondidas, cancele quando quiser.
@@ -68,12 +103,12 @@ export default function PricingSection() {
             key={index}
             className={`relative rounded-2xl p-8 flex flex-col justify-between border transition-all duration-300 bg-neutral-900/40 ${
               plan.highlight
-                ? "border-amber-500 shadow-xl shadow-amber-500/5 md:scale-105 z-10"
+                ? `border-solid ${corBorda} md:scale-105 z-10`
                 : "border-neutral-800/80 hover:border-neutral-700"
             }`}
           >
             {plan.highlight && (
-              <span className="absolute top-0 right-1/2 translate-x-1/2 -translate-y-1/2 bg-amber-500 text-neutral-950 text-[10px] font-black px-4 py-1.5 rounded-full uppercase tracking-wider whitespace-nowrap">
+              <span className={`absolute top-0 right-1/2 translate-x-1/2 -translate-y-1/2 ${corSelecao} text-neutral-950 text-[10px] font-black px-4 py-1.5 rounded-full uppercase tracking-wider whitespace-nowrap`}>
                 Mais Recomendado
               </span>
             )}
@@ -90,7 +125,7 @@ export default function PricingSection() {
               <ul className="mt-8 space-y-3.5">
                 {plan.features.map((feature, fIndex) => (
                   <li key={fIndex} className="flex items-start text-xs font-medium text-neutral-300">
-                    <span className="text-amber-500 mr-2.5 font-bold">✓</span>
+                    <span className={`${corTexto} mr-2.5 font-bold`}>✓</span>
                     {feature}
                   </li>
                 ))}
@@ -103,7 +138,7 @@ export default function PricingSection() {
               rel="noopener noreferrer"
               className={`mt-8 w-full block text-center py-3.5 px-4 rounded-xl font-bold text-xs uppercase tracking-wider transition-all ${
                 plan.highlight
-                  ? "bg-amber-500 text-neutral-950 hover:bg-amber-400"
+                  ? `${corBotao} text-neutral-950`
                   : "bg-neutral-800 text-white hover:bg-neutral-700"
               }`}
             >
