@@ -1,32 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
-
 interface ServicesAndGalleryProps {
   cliente: any;
   servicos?: any[];
+  galeria?: any[]; // Recebe a lista dinâmica vinda do banco (Page.tsx)
 }
 
-export default function ServicesAndGallery({ cliente, servicos: servicosIniciais = [] }: ServicesAndGalleryProps) {
-  const [servicos, setServicos] = useState<any[]>(servicosIniciais);
-
-  // Sincroniza os serviços vindos do Page.tsx (Server Component)
-  useEffect(() => {
-    if (servicosIniciais && servicosIniciais.length > 0) {
-      setServicos(servicosIniciais);
-    }
-  }, [servicosIniciais]);
-
-  const galeriaFotos = [
-    "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=600&q=80",
-    "https://images.unsplash.com/photo-1632345031435-8797b2d58045?auto=format&fit=crop&w=600&q=80",
-    "https://images.unsplash.com/photo-1519014816548-bf5fe059798b?auto=format&fit=crop&w=600&q=80",
-    "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=600&q=80",
-  ];
+export default function ServicesAndGallery({ cliente, servicos = [], galeria = [] }: ServicesAndGalleryProps) {
+  // 🔥 CORREÇÃO GLOBAL: Usamos os arrays das propriedades diretamente.
+  // Isso remove os estados obsoletos que travavam o cache e causavam duplicações na árvore do DOM.
 
   return (
     <>
-      {/* 💅 🔥 ID DUPLO PARA RESPONDER AO CLIQUE DO MENU (Suporta #services e #servicos) */}
+      {/* 💅 SEÇÃO DE PROCEDIMENTOS */}
       <section id="services" className="py-20 max-w-6xl mx-auto px-4 border-t border-neutral-900 bg-neutral-950 scroll-mt-20">
         <div id="servicos" className="text-center mb-16">
           <h2 className="text-3xl font-black uppercase tracking-tight text-white">Nossos Procedimentos</h2>
@@ -79,7 +65,6 @@ export default function ServicesAndGallery({ cliente, servicos: servicosIniciais
                     )}
                   </div>
                   
-                  {/* 🔥 BOTÃO COM LÓGICA DE SELEÇÃO AUTOMÁTICA VIA EVENTO GLOBAL */}
                   <a 
                     href="#agendamento"
                     onClick={() => {
@@ -97,27 +82,33 @@ export default function ServicesAndGallery({ cliente, servicos: servicosIniciais
         )}
       </section>
 
-      {/* 📸 GALERIA DE FOTOS */}
+      {/* 📸 SEÇÃO DA GALERIA DE FOTOS REAL DO SUPABASE */}
       <section id="galeria" className="py-20 max-w-6xl mx-auto px-4 border-t border-neutral-900 bg-neutral-950 scroll-mt-20">
         <div className="text-center mb-16">
           <h2 className="text-3xl font-black uppercase tracking-tight text-white">Trabalhos Reais</h2>
           <p className="text-neutral-500 text-xs uppercase tracking-widest mt-2">Fotos do nosso Studio</p>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {galeriaFotos.map((foto, index) => (
-            <div 
-              key={index} 
-              className="relative aspect-square rounded-2xl overflow-hidden border border-neutral-900 bg-neutral-900 group cursor-pointer"
-            >
-              <img 
-                src={foto} 
-                alt={`Unhas Feitas ${index + 1}`}
-                className="object-cover w-full h-full filter brightness-90 group-hover:brightness-100 group-hover:scale-105 transition-all duration-500"
-              />
-            </div>
-          ))}
-        </div>
+        {galeria.length === 0 ? (
+          <div className="text-center py-10 border border-dashed border-neutral-800 rounded-2xl">
+            <p className="text-sm text-neutral-500">Nenhuma foto adicionada ao portfólio ainda.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+            {galeria.map((foto) => (
+              <div 
+                key={foto.id} 
+                className="relative aspect-square rounded-2xl overflow-hidden border border-neutral-900 bg-neutral-900 group cursor-pointer"
+              >
+                <img 
+                  src={foto.imagem_url} 
+                  alt="Trabalho do Studio"
+                  className="object-cover w-full h-full filter brightness-90 group-hover:brightness-100 group-hover:scale-105 transition-all duration-500"
+                />
+              </div>
+            ))}
+          </div>
+        )}
       </section>
     </>
   );

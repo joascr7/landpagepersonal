@@ -1,3 +1,5 @@
+"use client";
+
 import Image from "next/image";
 
 interface AboutSectionProps {
@@ -5,10 +7,11 @@ interface AboutSectionProps {
 }
 
 export default function AboutSection({ cliente }: AboutSectionProps) {
-  const ehEstetica = cliente.nicho === "estetica";
+  const clienteValido = cliente || {};
+  const ehEstetica = clienteValido.nicho === "estetica";
 
   // Captura a cor do banco. Se não existir, define o padrão baseado no nicho
-  const corDefinida = cliente.tema_cor || (ehEstetica ? "pink" : "amber");
+  const corDefinida = clienteValido.tema_cor || (ehEstetica ? "pink" : "amber");
 
   // Dicionário de cores estático preparado para o Tailwind v4
   const mapasDeCores: Record<string, any> = {
@@ -37,26 +40,29 @@ export default function AboutSection({ cliente }: AboutSectionProps) {
   // Seleciona o estilo ativo com base na cor escolhida
   const estiloAtivo = mapasDeCores[corDefinida] || mapasDeCores[ehEstetica ? "pink" : "amber"];
 
+  // 🔥 SOLUÇÃO DA FOTO: Lê tanto foto_about quanto foto_sobre para garantir que ela apareça
+  const urlDaFoto = clienteValido.foto_about || clienteValido.foto_sobre;
+
   return (
-    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-32 border-t border-neutral-900 bg-neutral-900/10">
+    <section id="sobre" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-32 border-t border-neutral-900 bg-neutral-900/10 scroll-mt-20">
       <div className="flex flex-col md:flex-row items-center gap-12 md:gap-20">
         
         {/* Lado da Imagem Secundária Dinâmica */}
         <div className="flex-1 w-full max-w-sm aspect-[3/4] rounded-2xl border border-neutral-800 bg-neutral-900/40 overflow-hidden shadow-2xl flex items-center justify-center group hover:border-neutral-700 transition-colors relative">
           
-          {/* Busca a coluna foto_about do banco */}
-          {cliente.foto_about ? (
+          {urlDaFoto ? (
             <Image
-              src={cliente.foto_about}
-              alt={`Sobre ${cliente.nome}`}
+              src={urlDaFoto}
+              alt={`Sobre ${clienteValido.nome}`}
               fill
               className="object-cover"
               sizes="(max-w-md) 100vw, 380px"
+              priority
             />
           ) : (
             <div className="text-center p-6 select-none font-mono text-neutral-500">
               {ehEstetica 
-                ? `[ Foto de ${cliente.nome} no Studio ou aplicando Gel ]`
+                ? `[ Foto de ${clienteValido.nome} no Studio ou aplicando Gel ]`
                 : "[ Foto sua atuando como Personal ou estudando ]"}
             </div>
           )}
@@ -68,37 +74,37 @@ export default function AboutSection({ cliente }: AboutSectionProps) {
             {ehEstetica ? "Especialista" : "Treinador"}
           </h2>
           
-          {/* 🔥 TÍTULO DO SOBRE CONECTADO À SUA COLUNA SOBRE_TITULO */}
-          <p className="mt-2 text-3xl font-extrabold text-white sm:text-4xl">
-            {cliente.sobre_titulo || (
+          {/* TÍTULO DO SOBRE CONECTADO À COLUNA SOBRE_TITULO */}
+          <h3 className="mt-2 text-3xl font-extrabold text-white sm:text-4xl leading-tight">
+            {clienteValido.sobre_titulo || (
               ehEstetica 
                 ? "Técnica, durabilidade e sofisticação combinadas."
                 : "Ciência na prática, sem perda de tempo."
             )}
-          </p>
+          </h3>
           
-          {/* 🔥 PARÁGRAFO 1 CONECTADO À SUA COLUNA SOBRE_TEXTO_1 */}
+          {/* PARÁGRAFO 1 CONECTADO À COLUNA SOBRE_TEXTO_1 */}
           <p className="mt-6 text-neutral-400 leading-relaxed text-lg">
-            {cliente.sobre_texto_1 ? (
-              cliente.sobre_texto_1
+            {clienteValido.sobre_texto_1 ? (
+              clienteValido.sobre_texto_1
             ) : ehEstetica ? (
               <>
-                Meu nome é <strong className="text-white">{cliente.nome}</strong> e sou especialista em embelezamento e saúde das unhas. Todo o meu trabalho é pautado no uso de materiais premium de altíssima durabilidade e em técnicas avançadas de simetria e acabamento natural.
+                Meu nome é <strong className="text-white">{clienteValido.nome}</strong> e sou especialista em embelezamento e saúde das unhas. Todo o meu trabalho é pautado no uso de materiais premium de altíssima durabilidade e em técnicas avançadas de simetria e acabamento natural.
               </>
             ) : (
               <>
-                Meu nome é <strong className="text-white">{cliente.nome}</strong> e tenho anos de experiência com prescrição de treinamento de alta performance e emagrecimento. Todos os programas da minha consultoria fitness online são baseados em evidências científicas e anos de experimentação prática.
+                Meu nome é <strong className="text-white">{clienteValido.nome}</strong> e tenho anos de experiência com prescrição de treinamento de alta performance e emagrecimento. Todos os programas da minha consultoria fitness online são baseados em evidências científicas e anos de experimentação prática.
               </>
             )}
           </p>
           
-          {/* 🔥 PARÁGRAFO 2 CONECTADO À SUA COLUNA SOBRE_TEXTO_2 */}
+          {/* PARÁGRAFO 2 CONECTADO À COLUNA SOBRE_TEXTO_2 */}
           <p className="mt-4 text-neutral-400 leading-relaxed text-lg">
-            {cliente.sobre_texto_2 ? (
-              cliente.sobre_texto_2
+            {clienteValido.sobre_texto_2 ? (
+              clienteValido.sobre_texto_2
             ) : ehEstetica ? (
               <>
-                Meu objetivo é estruturar um atendimento personalizado para que você tenha unhas impecáveis, resistentes e que blindem a sua autoestima na correria do dia a dia.
+                Meu objetivo é estruturar um atendimento personalizado para que você tenha unhas impecáveis, resistentes e que blindem a sua autoestima na correeria do dia a dia.
               </>
             ) : (
               <>

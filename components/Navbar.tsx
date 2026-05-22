@@ -14,8 +14,8 @@ export default function Navbar({ cliente }: NavbarProps) {
   const numeroBruto = String(clienteValido.whatsapp_numero || "");
   const numeroLimpo = numeroBruto.replace(/[^0-9]/g, ""); 
 
-  const mensagemWhats = encodeURIComponent(clienteValido.whatsapp_texto || "Olá! Gostaria de saber mais sobre os seus serviços.");
-  const linkWhatsApp = `https://wa.me/${numeroLimpo}?text=${mensagemWhats}`;
+  const mensajeWhats = encodeURIComponent(clienteValido.whatsapp_texto || "Olá! Gostaria de saber mais sobre os seus serviços.");
+  const linkWhatsApp = `https://wa.me/${numeroLimpo}?text=${mensajeWhats}`;
 
   // 2. Mapeamento de cores estáticas para o Tailwind v4
   const corDefinida = clienteValido.tema_cor || (ehEstetica ? "pink" : "amber");
@@ -53,7 +53,7 @@ export default function Navbar({ cliente }: NavbarProps) {
       : "PT";
 
   return (
-    /* 🔥 SOLUÇÃO DEFINITIVA: top-0, left-0 e w-full isolados com h-20 rígido. 
+    /* SOLUÇÃO DEFINITIVA: top-0, left-0 e w-full isolados com h-20 rígido. 
        O segredo está em remover classes ambíguas e travar o z-index máximo controlado apenas na barra física. */
     <header className="fixed top-0 left-0 w-full h-20 z-50 bg-neutral-950/90 backdrop-blur-md border-b border-neutral-900 block isolate">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full relative z-50">
@@ -88,22 +88,28 @@ export default function Navbar({ cliente }: NavbarProps) {
           {/* Links de Navegação */}
           <nav className="flex items-center gap-6 md:gap-8 relative z-50">
             <div className="hidden md:flex items-center gap-6 text-sm font-semibold text-neutral-400">
-              <Link href={`/${slugAtivo}#como-funciona`} className="hover:text-white transition-colors">
-                Como funciona?
-              </Link>
               
-              {/* 🔥 CORRIGIDO: Se for estética rola para a vitrine na Home, se for Personal rola para a seção do App na Home */}
-              <Link href={`/${slugAtivo}#${ehEstetica ? "servicos" : "app"}`} className="hover:text-white transition-colors">
+              {/* 🔥 ESCONDIDO PARA ESTÉTICA: Só mostra o "Como funciona?" se NÃO for estética */}
+              {!ehEstetica && (
+                <Link href={`/${slugAtivo}#como-funciona`} className="hover:text-white transition-colors">
+                  Como funciona?
+                </Link>
+              )}
+              
+              {/* Link de Serviços / Nosso App */}
+              <Link href={`/${slugAtivo}#${ehEstetica ? "services" : "app"}`} className="hover:text-white transition-colors">
                 {ehEstetica ? "Serviços" : "Nosso app"}
               </Link>
               
-              {/* 🔥 CORRIGIDO: Rota da loja aponta dinamicamente para /[slug]/loja se for Personal. Se for estética, aponta para a seção de planos da Home */}
-              <Link href={ehEstetica ? `/${slugAtivo}#precos` : `/${slugAtivo}/loja`} className="hover:text-white transition-colors">
-                {ehEstetica ? "Planos" : "Loja"}
-              </Link>
+              {/* 🔥 CORRIGIDO: A opção "Planos / Loja" agora só renderiza para Personal Trainer */}
+              {!ehEstetica && (
+                <Link href={`/${slugAtivo}/loja`} className="hover:text-white transition-colors">
+                  Loja
+                </Link>
+              )}
             </div>
 
-            {/* 🔥 CORRIGIDO: Botão de ação principal redireciona para a seção correta sem se perder pelas rotas internas */}
+            {/* Botão de Destaque Dinâmico */}
             <Link
               href={ehEstetica ? `/${slugAtivo}#agendamento` : `/${slugAtivo}/planilhas-prontas`}
               className={`px-5 py-2.5 rounded-full ${estiloAtivo.botao} font-bold text-sm transition-colors shadow-md relative z-50`}

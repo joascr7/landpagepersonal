@@ -35,73 +35,87 @@ export default async function Home({ params }: PageProps) {
     notFound();
   }
 
-  // 4. BUSCA DIRETA SEM JOIN: Força o Supabase a extrair a lista completa de serviços pelo ID do cliente
+  // 4. BUSCA DIRETA DOS SERVIÇOS: Extrai a lista completa de serviços pelo ID do cliente
   const { data: servicosDoBanco } = await supabase
     .from("servicos")
     .select("*")
     .eq("cliente_id", cliente.id);
 
-  const ehEstetica = cliente.nicho === "estetica";
+  // 5. BUSCA DIRETA DA GALERIA: Busca as fotos do portfólio deste cliente
+  const { data: galeriaDoBanco } = await supabase
+    .from("galeria")
+    .select("*")
+    .eq("cliente_id", cliente.id);
+
+  // Cria uma referência fortemente tipada como 'any' para evitar travas do compilador
+  const clienteObjeto: any = cliente;
+  const ehEstetica = clienteObjeto.nicho === "estetica";
   const listaDeServicos = servicosDoBanco || [];
+  const listaDaGaleria = galeriaDoBanco || [];
 
   return (
     <main className="bg-neutral-950 text-white min-h-screen font-sans selection:bg-pink-500 selection:text-white overflow-x-hidden scroll-smooth relative">
       
       {/* O Menu Superior Fixo */}
-      <Navbar cliente={cliente} />
+      <Navbar cliente={clienteObjeto} />
       
       {/* CORREÇÃO GLOBAL DE CLIQUES */}
       <div className="relative z-10 w-full pointer-events-auto block">
         
         {/* Seção Hero de Entrada */}
-        <HeroSection cliente={cliente} />
+        <HeroSection cliente={clienteObjeto} />
         
-        {/* Passa a lista convertida para anular o erro do TypeScript */}
-        {ehEstetica && <ServicesAndGallery cliente={cliente} servicos={listaDeServicos as any[]} />}
-        
-        {/* Só exibe a seção do Passo a Passo (Objectives) se NÃO for estética */}
-        {!ehEstetica && (
-          <div id="como-funciona">
-            <ObjectivesSection cliente={cliente} />
-          </div>
+        {/* Seção de Procedimentos e Trabalhos Reais (Apenas para Estética) */}
+        {ehEstetica && (
+          <ServicesAndGallery 
+            cliente={clienteObjeto} 
+            servicos={listaDeServicos as any[]} 
+            galeria={listaDaGaleria as any[]} 
+          />
         )}
+        
+        {/* Exibe os 3 Cards Informativos de como você vai ajudar o cliente */}
+        <div id="como-funciona">
+          <ObjectivesSection {...clienteObjeto} cliente={clienteObjeto} />
+        </div>
         
         {/* Só mostra a seção do Aplicativo se for Personal Trainer */}
         {!ehEstetica && (
           <div id="app">
-            <AppSection cliente={cliente} />
+            <AppSection cliente={clienteObjeto} />
           </div>
         )}
         
-        {/* 🔥 CORRIGIDO: Só exibe o FeaturesSection se NÃO for estética (remove o passo a passo) */}
+        {/* Só exibe o FeaturesSection se NÃO for estética */}
         {!ehEstetica && (
           <div id="services">
-            <FeaturesSection cliente={cliente} />
+            <FeaturesSection cliente={clienteObjeto} />
           </div>
         )}
         
-        <AboutSection cliente={cliente} />
+        {/* 🌟 SEÇÃO SOBRE MIM (Renderizada de forma global, apenas uma vez) */}
+        <AboutSection cliente={clienteObjeto} />
         
         {/* Só exibe os cards de planos pretos se NÃO for estética */}
         {!ehEstetica && (
           <div id="precos" className="py-20 md:py-32 border-t border-neutral-900 bg-neutral-950">
-            <PricingSection cliente={cliente} />
+            <PricingSection cliente={clienteObjeto} />
           </div>
         )}
         
-        {/* Passa a lista convertida para anular o erro do TypeScript */}
+        {/* Formulário de Agendamento de Horários (Apenas para Estética) */}
         {ehEstetica && (
           <div id="agendamento">
-            <BookingSection cliente={cliente} servicos={listaDeServicos as any[]} />
+            <BookingSection cliente={clienteObjeto} servicos={listaDeServicos as any[]} />
           </div>
         )}
         
-        <FaqSection cliente={cliente} />
+        <FaqSection cliente={clienteObjeto} />
 
       </div>
 
       {/* O Rodapé Dinâmico */}
-      <Footer cliente={cliente} />
+      <Footer cliente={clienteObjeto} />
     </main>
   );
 }
