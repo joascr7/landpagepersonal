@@ -24,22 +24,22 @@ export default function Navbar({ cliente }: NavbarProps) {
     blue: {
       textoDestaque: "text-blue-500",
       bgIniciais: "bg-blue-500",
-      botao: "bg-blue-500 hover:bg-blue-400 shadow-blue-500/10",
+      botao: "bg-blue-500 hover:bg-blue-400 text-neutral-950 shadow-blue-500/10",
     },
     purple: {
       textoDestaque: "text-purple-500",
       bgIniciais: "bg-purple-500",
-      botao: "bg-purple-500 hover:bg-purple-400 shadow-purple-500/10",
+      botao: "bg-purple-500 hover:bg-purple-400 text-white shadow-purple-500/10",
     },
     pink: {
       textoDestaque: "text-pink-500",
       bgIniciais: "bg-pink-500",
-      botao: "bg-pink-500 hover:bg-pink-400 shadow-pink-500/10",
+      botao: "bg-pink-500 hover:bg-pink-400 text-white shadow-pink-500/10",
     },
     amber: {
       textoDestaque: "text-amber-500",
       bgIniciais: "bg-amber-500",
-      botao: "bg-amber-500 hover:bg-amber-400 shadow-amber-400/10",
+      botao: "bg-amber-500 hover:bg-amber-400 text-neutral-950 shadow-amber-400/10",
     },
   };
 
@@ -91,19 +91,24 @@ export default function Navbar({ cliente }: NavbarProps) {
               <Link href={`/${slugAtivo}#como-funciona`} className="hover:text-white transition-colors">
                 Como funciona?
               </Link>
-              <Link href={`/${slugAtivo}#app`} className="hover:text-white transition-colors">
-                {ehEstetica ? "Espaço" : "Nosso app"}
+              
+              {/* 🔥 CORRIGIDO: Se for estética rola para a vitrine na Home, se for Personal rola para a seção do App na Home */}
+              <Link href={`/${slugAtivo}#${ehEstetica ? "servicos" : "app"}`} className="hover:text-white transition-colors">
+                {ehEstetica ? "Serviços" : "Nosso app"}
               </Link>
-              <Link href={`/${slugAtivo}/loja`} className="hover:text-white transition-colors">
-                Loja
+              
+              {/* 🔥 CORRIGIDO: Rota da loja aponta dinamicamente para /[slug]/loja se for Personal. Se for estética, aponta para a seção de planos da Home */}
+              <Link href={ehEstetica ? `/${slugAtivo}#precos` : `/${slugAtivo}/loja`} className="hover:text-white transition-colors">
+                {ehEstetica ? "Planos" : "Loja"}
               </Link>
             </div>
 
+            {/* 🔥 CORRIGIDO: Botão de ação principal redireciona para a seção correta sem se perder pelas rotas internas */}
             <Link
-              href={`/${slugAtivo}/planilhas-prontas`}
-              className={`px-5 py-2.5 rounded-full ${estiloAtivo.botao} text-neutral-950 font-bold text-sm transition-colors shadow-md relative z-50`}
+              href={ehEstetica ? `/${slugAtivo}#agendamento` : `/${slugAtivo}/planilhas-prontas`}
+              className={`px-5 py-2.5 rounded-full ${estiloAtivo.botao} font-bold text-sm transition-colors shadow-md relative z-50`}
             >
-              {ehEstetica ? "Ver Serviços" : "Planilhas prontas"}
+              {ehEstetica ? "Agendar Horário" : "Planilhas prontas"}
             </Link>
 
             {/* Ícone de Suporte WhatsApp */}
