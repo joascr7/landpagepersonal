@@ -1,1 +1,7 @@
 @import "tailwindcss";
+
+/* Isso força o navegador a aplicar o fundo escuro nas opções de qualquer select */
+select option {
+  background-color: #171717; /* Isso resolve o problema de o fundo ficar branco no modo light */
+  color: #ffffff;
+}

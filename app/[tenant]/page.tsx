@@ -1,22 +1,21 @@
 import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
+import ServicesAndGallery from "@/components/ServicesAndGallery";
 import ObjectivesSection from "@/components/ObjectivesSection";
 import AppSection from "@/components/AppSection";
 import FeaturesSection from "@/components/FeaturesSection";
 import AboutSection from "@/components/AboutSection";
 import PricingSection from "@/components/PricingSection";
-import FaqSection from "@/components/FaqSection";
-import Footer from "@/components/Footer"; 
-
-import ServicesAndGallery from "@/components/ServicesAndGallery";
 import BookingSection from "@/components/BookingSection";
+import FaqSection from "@/components/FaqSection";
+import Footer from "@/components/Footer";
+
+import TestimonialsSection from "@/components/TestimonialsSection";
 
 import { supabase } from "@/lib/supabase";
 import { notFound } from "next/navigation";
 
-interface PageProps {
-  params: Promise<{ tenant: string }>;
-}
+interface PageProps { params: Promise<{ tenant: string }>; }
 
 export default async function Home({ params }: PageProps) {
   const { tenant } = await params;
@@ -27,79 +26,72 @@ export default async function Home({ params }: PageProps) {
     .eq("slug", tenant)
     .single();
 
-  if (error || !cliente || cliente.assinatura_status !== "ativo") {
-    notFound();
-  }
+  if (error || !cliente || cliente.assinatura_status !== "ativo") notFound();
 
-  const { data: servicosDoBanco } = await supabase
-    .from("servicos")
-    .select("*")
-    .eq("cliente_id", cliente.id);
+  const [servicosRes, galeriaRes] = await Promise.all([
+    supabase.from("servicos").select("*").eq("cliente_id", cliente.id),
+    supabase.from("galeria").select("*").eq("cliente_id", cliente.id),
+  ]);
 
-  const { data: galeriaDoBanco } = await supabase
-    .from("galeria")
-    .select("*")
-    .eq("cliente_id", cliente.id);
+  const ehEstetica = cliente.nicho === "estetica";
 
-  const clienteObjeto: any = cliente;
-  const ehEstetica = clienteObjeto.nicho === "estetica";
-  const listaDeServicos = servicosDoBanco || [];
-  const listaDaGaleria = galeriaDoBanco || [];
+  // CONTROLE CENTRALIZADO: 
+  // Altere a string abaixo para 'dark', 'light' ou 'beige' sempre que quiser.
+  // Você pode até ler isso de uma coluna fixa no banco se preferir.
+  const temaAtivo = cliente.tema || 'dark'; 
+  
+  const temaClasses = {
+    dark: "bg-neutral-950 text-white selection:bg-amber-500",
+    light: "bg-white text-neutral-900 selection:bg-amber-500",
+    beige: "bg-[#FDF6E3] text-neutral-800 selection:bg-amber-500"
+  };
 
   return (
-    <main className={`min-h-screen bg-neutral-950 text-white font-sans ${ehEstetica ? 'selection:bg-pink-500' : 'selection:bg-amber-500'} selection:text-neutral-950 overflow-x-hidden scroll-smooth relative`}>
+    <main className={`min-h-screen font-sans overflow-x-hidden scroll-smooth relative transition-colors duration-500 ${temaClasses[temaAtivo as keyof typeof temaClasses]}`}>
       
-      <Navbar cliente={clienteObjeto} />
+      <Navbar cliente={cliente} />
       
       <div className="relative z-10 w-full">
+        <HeroSection cliente={cliente} />
+       
         
-        <HeroSection cliente={clienteObjeto} />
-        
-        {/* 🔥 VITRINE / GALERIA INTELIGENTE */}
         <div id="vitrine">
           <ServicesAndGallery 
-            cliente={clienteObjeto} 
-            // Se for personal, enviamos um array vazio para o componente não renderizar a parte de "serviços"
-            servicos={ehEstetica ? listaDeServicos : []} 
-            galeria={listaDaGaleria} 
+            cliente={cliente} 
+            servicos={ehEstetica ? servicosRes.data || [] : []} 
+            galeria={galeriaRes.data || []} 
           />
         </div>
         
-        <div id="como-funciona">
-          <ObjectivesSection cliente={clienteObjeto} />
-        </div>
+        <ObjectivesSection cliente={cliente} />
         
         {!ehEstetica && (
-          <div id="app">
-            <AppSection cliente={clienteObjeto} />
+          <>
+            <AppSection cliente={cliente} />
+            <FeaturesSection cliente={cliente} />
+          </>
+        )}
+        
+        <AboutSection cliente={cliente} />
+        
+        {!ehEstetica && (
+          <div id="precos" className="py-20 border-t border-neutral-900/10">
+            <PricingSection cliente={cliente} />
           </div>
         )}
         
-        {!ehEstetica && (
-          <div id="services">
-            <FeaturesSection cliente={clienteObjeto} />
-          </div>
-        )}
-        
-        <AboutSection cliente={clienteObjeto} />
-        
-        {!ehEstetica && (
-          <div id="precos" className="py-20 md:py-32 border-t border-neutral-900 bg-neutral-950">
-            <PricingSection cliente={clienteObjeto} />
-          </div>
-        )}
-        
+        <TestimonialsSection cliente={cliente} />
+
         {ehEstetica && (
           <div id="agendamento">
-            <BookingSection cliente={clienteObjeto} servicos={listaDeServicos} />
+            <BookingSection cliente={cliente} servicos={servicosRes.data || []} />
           </div>
         )}
         
-        <FaqSection cliente={clienteObjeto} />
-
+        <FaqSection cliente={cliente} />
       </div>
 
-      <Footer cliente={clienteObjeto} />
+      <Footer cliente={cliente} />
     </main>
   );
 }

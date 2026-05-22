@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 interface ObjectivesSectionProps {
-  cliente: any; // Recebe os dados dinâmicos do cliente
+  cliente: any;
 }
 
 export default function ObjectivesSection({ cliente }: ObjectivesSectionProps) {
@@ -30,94 +30,55 @@ export default function ObjectivesSection({ cliente }: ObjectivesSectionProps) {
   const estiloAtivo = mapasDeCores[corDefinida] || mapasDeCores[ehEstetica ? "pink" : "amber"];
 
   const objectives = ehEstetica ? [
-    {
-      title: "Alongamento em Gel",
-      description: "Para quem quer unhas longas, simétricas e com aspecto natural instantaneamente.",
-      details: "Utilizo as técnicas mais modernas do mercado para criar extensões leves, resistentes e com acabamento ultra fino. O procedimento respeita o formato natural da sua unha, garantindo um resultado elegante que não solta e não quebra no dia a dia. Tempo de sessão: aproximadamente 2 horas.",
-      img: clienteValido.img_objetivo_1 || clienteValido.img_objective_1 || "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=500&q=80",
-    },
-    {
-      title: "Manutenção Perfeita",
-      description: "Pra quem já tem o alongamento e precisa manter a estrutura segura e o brilho renovado.",
-      details: "A manutenção deve ser feita a cada 20 ou 30 dias para repor o gel no crescimento da unha, nivelar a estrutura e prevenir infiltrações ou descolamentos. Refazemos todo o acabamento, cuticulagem e aplicamos um novo top coat de alto brilho. Tempo de sessão: aproximadamente 1h30.",
-      img: clienteValido.img_objetivo_2 || clienteValido.img_objective_2 || "https://images.unsplash.com/photo-1632345031435-8797b2d58045?auto=format&fit=crop&w=500&q=80",
-    },
-    {
-      title: "Blindagem de Unhas",
-      description: "Se você quer manter o comprimento natural das suas unhas, mas precisa que o esmalte dure semanas.",
-      details: "A blindagem é uma camada de gel ou acrílico aplicada diretamente sobre a sua unha natural, sem estender o comprimento. Ela cria uma barreira protetora que impede que a unha lasque ou quebre, fazendo com que a esmaltação comum ou em gel dure intacta por até 25 dias. Tempo de sessão: 1 hora.",
-      img: clienteValido.img_objetivo_3 || clienteValido.img_objective_3 || "https://images.unsplash.com/photo-1607779097040-26e80aa78e66?auto=format&fit=crop&w=500&q=80",
-    },
+    { title: "Alongamento em Gel", description: "Para unhas longas, simétricas e naturais.", details: "Utilizo técnicas modernas para extensões leves e resistentes. O procedimento respeita sua unha natural, garantindo um resultado elegante. Tempo: ~2 horas.", img: clienteValido.img_objetivo_1 || "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=500&q=80" },
+    { title: "Manutenção Perfeita", description: "Estrutura segura e brilho renovado.", details: "Manutenção recomendada a cada 20-30 dias para repor o gel e prevenir infiltrações. Inclui acabamento e cuticulagem. Tempo: ~1h30.", img: clienteValido.img_objetivo_2 || "https://images.unsplash.com/photo-1632345031435-8797b2d58045?auto=format&fit=crop&w=500&q=80" },
+    { title: "Blindagem de Unhas", description: "Proteção para unhas naturais.", details: "Camada protetora sobre a unha natural que impede quebras e lascas. Esmaltação dura até 25 dias. Tempo: 1 hora.", img: clienteValido.img_objetivo_3 || "https://images.unsplash.com/photo-1607779097040-26e80aa78e66?auto=format&fit=crop&w=500&q=80" },
   ] : [
-    {
-      title: "Emagrecimento",
-      description: "Para você que quer diminuição de medidas com redução do peso corporal.",
-      details: "Vou elaborar um treinamento baseado no aumento do gasto calórico diário de maneira inteligente e eficiente. Vamos utilizar a musculação para preservar sua massa muscular enquanto focamos no cardio para reduzir a gordura corporal. Com 40 minutos diários já conseguimos gerar os resultados.",
-      img: clienteValido.img_objetivo_1 || clienteValido.img_objective_1 || "https://images.unsplash.com/photo-1518310383802-640c2de311b2?auto=format&fit=crop&w=500&q=80",
-    },
-    {
-      title: "Hipertrofia",
-      description: "Pra quem está satisfeito com o percentual de gordura e quer subir medidas e massa muscular.",
-      details: "Vamos utilizar exercícios básicos e altamente eficientes para gerar o estímulo ideal para hipertrofia. Métodos como Bi-set, Drop-set, Rest Pause, Ponto Zero entre outros são os mais utilizados nesse tipo de programa. Seus treinos vão durar aproximadamente 50min.",
-      img: clienteValido.img_objetivo_2 || clienteValido.img_objective_2 || "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=500&q=80",
-    },
-    {
-      title: "Definição muscular",
-      description: "Se você estiver querendo subir medidas mas sem ganhar gordura e manter um corpo mais slim.",
-      details: "Vou montar pra você uma combinação perfeita entre os exercícios aeróbios e musculação. Daremos prioridade para os seus pontos fracos, buscando um corpo harmônico e simétrico. Vamos utilizar cardios intervalados de alta intensidade para resultados ainda mais rápidos. 60 minutos por sessão serão suficientes.",
-      img: clienteValido.img_objetivo_3 || clienteValido.img_objective_3 || "https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?auto=format&fit=crop&w=500&q=80",
-    },
+    { title: "Emagrecimento", description: "Redução de peso corporal com eficiência.", details: "Treinamento focado no aumento do gasto calórico diário. Combinamos musculação e cardio para reduzir gordura preservando massa magra.", img: clienteValido.img_objetivo_1 || "https://images.unsplash.com/photo-1518310383802-640c2de311b2?auto=format&fit=crop&w=500&q=80" },
+    { title: "Hipertrofia", description: "Ganho de massa e volume muscular.", details: "Estimulação ideal com exercícios compostos e métodos de alta intensidade como Drop-set e Ponto Zero.", img: clienteValido.img_objetivo_2 || "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=500&q=80" },
+    { title: "Definição muscular", description: "Corpo mais slim e harmônico.", details: "Combinação de aeróbios e musculação com foco em pontos fracos e simetria corporal usando treinos intervalados.", img: clienteValido.img_objetivo_3 || "https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?auto=format&fit=crop&w=500&q=80" },
   ];
 
   return (
-    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-32 border-t border-neutral-900 bg-neutral-950">
+    // bg-inherit e border-current/10 fazem a seção se adaptar à cor do tema
+    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-32 border-t border-current/10 bg-inherit text-inherit">
       <div className="text-center max-w-3xl mx-auto mb-16">
-        <h2 className="text-3xl font-black text-white sm:text-4xl uppercase tracking-tight">
+        <h2 className="text-3xl font-black sm:text-4xl uppercase tracking-tight">
           Como eu vou te ajudar
         </h2>
         <div className={`w-16 h-1 ${estiloAtivo.linha} mx-auto mt-4 mb-6`}></div>
-        <p className="text-neutral-400 text-lg leading-relaxed">
+        <p className="opacity-70 text-lg leading-relaxed">
           {ehEstetica 
-            ? `Com o meu acompanhamento e serviços premium, você terá acesso a procedimentos de altíssima qualidade, moldados perfeitamente para o seu estilo e rotina.`
-            : `Com a minha consultoria online você terá uma planilha de treino de acordo com os seus objetivos, disponibilidade e levando em conta todo o seu histórico de treinamento.`}
+            ? "Acesso a procedimentos premium, moldados perfeitamente para o seu estilo e rotina."
+            : "Treinos estruturados de acordo com seus objetivos, histórico e disponibilidade."}
         </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
         {objectives.map((obj, index) => {
           const estaAberto = !!abertoIdx[index];
-
           return (
-            <div key={index} className="bg-neutral-900 border border-neutral-800 rounded-2xl overflow-hidden flex flex-col">
+            <div key={index} className="bg-current/5 border border-current/10 rounded-2xl overflow-hidden flex flex-col">
               <div className="h-48 w-full relative">
                 <img src={obj.img} alt={obj.title} className="w-full h-full object-cover grayscale opacity-40" />
-                <div className="absolute inset-0 bg-gradient-to-t from-neutral-900 via-transparent to-transparent"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-inherit via-transparent to-transparent"></div>
               </div>
               <div className="p-8 flex-1 flex flex-col">
-                <h3 className="text-2xl font-bold text-white mb-2">{obj.title}</h3>
+                <h3 className="text-2xl font-bold mb-2">{obj.title}</h3>
                 
                 <button
                   type="button"
                   onClick={() => toggleCard(index)}
-                  className={`${estiloAtivo.textoSaibaComo} text-sm font-bold mb-4 block w-fit bg-transparent border-none p-0 cursor-pointer hover:underline text-left`}
+                  className={`${estiloAtivo.textoSaibaComo} text-sm font-bold mb-4 block w-fit p-0 cursor-pointer hover:underline`}
                 >
                   {estaAberto ? "Ocultar detalhes ▲" : "Saiba como ▼"}
                 </button>
 
-                <p className="text-neutral-300 font-medium mb-4 text-sm">{obj.description}</p>
+                <p className="opacity-80 font-medium mb-4 text-sm">{obj.description}</p>
                 
-                <div 
-                  className={`grid transition-all duration-300 ease-in-out text-neutral-400 text-xs leading-relaxed ${
-                    estaAberto 
-                      ? "grid-rows-[1fr] opacity-100 pt-4 border-t border-neutral-800/50 mt-auto" 
-                      : "grid-rows-[0fr] opacity-0"
-                  }`}
-                >
-                  <div className="overflow-hidden space-y-2">
-                    {obj.details}
-                  </div>
+                <div className={`grid transition-all duration-300 ease-in-out opacity-70 text-xs leading-relaxed ${estaAberto ? "grid-rows-[1fr] opacity-100 pt-4 border-t border-current/10 mt-auto" : "grid-rows-[0fr] opacity-0"}`}>
+                  <div className="overflow-hidden space-y-2">{obj.details}</div>
                 </div>
-
               </div>
             </div>
           );
