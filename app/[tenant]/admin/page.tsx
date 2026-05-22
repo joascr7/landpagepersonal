@@ -12,7 +12,13 @@ export default function AdminPanel({ params }: AdminPanelProps) {
   const { tenant } = use(params);
   const router = useRouter();
 
-  // Estados de Controle
+  // 🔒 ESTADOS DE SEGURANÇA E AUTENTICAÇÃO
+  const [autenticado, setAutenticado] = useState(false);
+  const [codigoDigitado, setCodigoDigitado] = useState("");
+  const [codigoCorretoBanco, setCodigoCorretoBanco] = useState("");
+  const [erroAutenticacao, setErroAutenticacao] = useState("");
+
+  // Estados de Controle Gerais
   const [loading, setLoading] = useState(true);
   const [salvandoCliente, setSalvandoCliente] = useState(false);
   const [salvandoAgenda, setSalvandoAgenda] = useState(false);
@@ -24,6 +30,7 @@ export default function AdminPanel({ params }: AdminPanelProps) {
 
   // Estados dos Dados do Cliente (Espaço)
   const [clienteId, setClienteId] = useState("");
+  const [nichoCliente, setNichoCliente] = useState("estetica"); 
   const [whatsappNumero, setWhatsappNumero] = useState("");
   const [navbarIniciais, setNavbarIniciais] = useState("");
   const [fotoHero, setFotoHero] = useState("");
@@ -32,9 +39,14 @@ export default function AdminPanel({ params }: AdminPanelProps) {
   const [imgObjetivo2, setImgObjetivo2] = useState("");
   const [imgObjetivo3, setImgObjetivo3] = useState("");
 
+  // 🔥 NOVOS ESTADOS EXCLUSIVOS DO NICHO PERSONAL TRAINER
+  const [instagramUrl, setInstagramUrl] = useState("");
+  const [certificacoes, setCertificacoes] = useState("");
+  const [checkoutUrl, setCheckoutUrl] = useState("");
+
   // ESTADOS DO CONTROLE DE HORÁRIOS DA AGENDA
   const diasDaSemanaTexto = ["Domingo", "Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado"];
-  const [diaSelecionadoConfig, setDiaSelecionadoConfig] = useState<number>(1); // Padrão: Segunda-feira
+  const [diaSelecionadoConfig, setDiaSelecionadoConfig] = useState<number>(1);
   const [estaFechado, setEstaFechado] = useState(false);
   const [horariosDoDia, setHorariosDoDia] = useState<string[]>([]);
   const [novoHoraInput, setNovoHoraInput] = useState("");
@@ -51,7 +63,9 @@ export default function AdminPanel({ params }: AdminPanelProps) {
   const [urlFotoNovaGaleria, setUrlFotoNovaGaleria] = useState("");
   const [agendamentos, setAgendamentos] = useState<any[]>([]);
 
-  // Carrega os dados iniciais do Supabase
+  const ehEstetica = nichoCliente === "estetica";
+
+  // Carrega os dados iniciais do Supabase e valida o acesso
   useEffect(() => {
     async function carregarDados() {
       setLoading(true);
@@ -63,6 +77,7 @@ export default function AdminPanel({ params }: AdminPanelProps) {
 
       if (!errCliente && cliente) {
         setClienteId(cliente.id);
+        setNichoCliente(cliente.nicho || "estetica"); 
         setWhatsappNumero(cliente.whatsapp_numero || "");
         setNavbarIniciais(cliente.navbar_iniciais_logo || "");
         setFotoHero(cliente.foto_hero || "");
@@ -70,6 +85,18 @@ export default function AdminPanel({ params }: AdminPanelProps) {
         setImgObjetivo1(cliente.img_objetivo_1 || "");
         setImgObjetivo2(cliente.img_objetivo_2 || "");
         setImgObjetivo3(cliente.img_objetivo_3 || "");
+
+        // 🔥 Alimenta as informações adicionadas do Personal
+        setInstagramUrl(cliente.instagram_url || "");
+        setCertificacoes(cliente.certificacoes || "");
+        setCheckoutUrl(cliente.checkout_url || "");
+
+        // Configuração de Segurança por PIN
+        setCodigoCorretoBanco(cliente.codigo_acesso || "1234");
+        const sessaoSalva = sessionStorage.getItem(`admin_auth_${tenant}`);
+        if (sessaoSalva === (cliente.codigo_acesso || "1234")) {
+          setAutenticado(true);
+        }
 
         // Carrega os horários da segunda-feira por padrão
         await carregarConfiguracaoDia(cliente.id, 1);
@@ -89,6 +116,28 @@ export default function AdminPanel({ params }: AdminPanelProps) {
     carregarDados();
   }, [tenant]);
 
+  // VERIFICA O PIN DIGITADO
+  const handleVerificarCodigoAcesso = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (codigoDigitado === codigoCorretoBanco) {
+      setAutenticado(true);
+      setErroAutenticacao("");
+      sessionStorage.setItem(`admin_auth_${tenant}`, codigoDigitado);
+    } else {
+      setErroAutenticacao("Código de acesso incorreto. Tente novamente.");
+    }
+  };
+
+  // LOGOUT DO PAINEL ADMIN
+  const handleLogout = () => {
+    if (confirm("Deseja realmente sair do painel administrativo?")) {
+      sessionStorage.removeItem(`admin_auth_${tenant}`);
+      setAutenticado(false);
+      setCodigoDigitado("");
+      window.location.reload();
+    }
+  };
+
   // CARREGA AS REGRAS DO DIA SELECIONADO NA AGENDA
   const carregarConfiguracaoDia = async (cId: string, dia: number) => {
     const { data: config } = await supabase
@@ -107,7 +156,6 @@ export default function AdminPanel({ params }: AdminPanelProps) {
     }
   };
 
-  // Trata troca de aba de dias da semana
   const handleTrocarDiaAbas = async (dia: number) => {
     setDiaSelecionadoConfig(dia);
     if (clienteId) {
@@ -115,7 +163,6 @@ export default function AdminPanel({ params }: AdminPanelProps) {
     }
   };
 
-  // Adicionar hora na lista local antes de persistir
   const handleAdicionarHoraLista = (e: React.FormEvent) => {
     e.preventDefault();
     if (!novoHoraInput || horariosDoDia.includes(novoHoraInput)) return;
@@ -124,12 +171,10 @@ export default function AdminPanel({ params }: AdminPanelProps) {
     setNovoHoraInput("");
   };
 
-  // Remover hora da lista local
   const handleRemoverHoraLista = (horaRemover: string) => {
     setHorariosDoDia(horariosDoDia.filter(h => h !== horaRemover));
   };
 
-  // SALVAR TURNO/REGRA DA AGENDA NO SUPABASE
   const handleSalvarConfigAgenda = async () => {
     if (!clienteId) return;
     setSalvandoAgenda(true);
@@ -148,7 +193,6 @@ export default function AdminPanel({ params }: AdminPanelProps) {
     else alert(`Agenda de ${diasDaSemanaTexto[diaSelecionadoConfig]} atualizada com sucesso!`);
   };
 
-  // Upload das imagens de perfil (Hero e Sobre)
   const handleUploadFotoCliente = async (e: React.ChangeEvent<HTMLInputElement>, tipo: "hero" | "sobre") => {
     const file = e.target.files?.[0];
     if (!file || !clienteId) return;
@@ -173,7 +217,6 @@ export default function AdminPanel({ params }: AdminPanelProps) {
     }
   };
 
-  // Upload das imagens dos objetivos
   const handleUploadFotoObjetivo = async (e: React.ChangeEvent<HTMLInputElement>, num: number) => {
     const file = e.target.files?.[0];
     if (!file || !clienteId) return;
@@ -199,7 +242,7 @@ export default function AdminPanel({ params }: AdminPanelProps) {
     }
   };
 
-  // Salva dados estruturados da aba 1
+  // Salva dados estruturados da seção 1
   const handleSalvarDadosCliente = async (e: React.FormEvent) => {
     e.preventDefault();
     setSalvandoCliente(true);
@@ -213,16 +256,19 @@ export default function AdminPanel({ params }: AdminPanelProps) {
         foto_sobre: fotoSobre || null,
         img_objetivo_1: imgObjetivo1 || null,
         img_objetivo_2: imgObjetivo2 || null,
-        img_objetivo_3: imgObjetivo3 || null
+        img_objetivo_3: imgObjetivo3 || null,
+        // 🔥 Salva os novos campos adicionais mapeados no banco
+        instagram_url: instagramUrl || null,
+        certificacoes: certificacoes || null,
+        checkout_url: checkoutUrl || null
       })
       .eq("id", clienteId);
 
     setSalvandoCliente(false);
     if (error) alert("Erro ao salvar: " + error.message);
-    else alert("Dados do espaço e fotos atualizados com sucesso!");
+    else alert("Dados e fotos atualizados com sucesso!");
   };
 
-  // Upload de imagem de serviço e ações secundárias
   const handleUploadImagemServico = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -234,7 +280,7 @@ export default function AdminPanel({ params }: AdminPanelProps) {
       if (error) throw error;
       const { data: { publicUrl } } = supabase.storage.from("servicos-imagens").getPublicUrl(fileName);
       setImagemUrlServico(publicUrl);
-      alert("Imagem do serviço enviada!");
+      alert("Imagem enviada!");
     } catch (error: any) { alert(error.message); } finally { setSubindoImagem(false); }
   };
 
@@ -309,298 +355,303 @@ export default function AdminPanel({ params }: AdminPanelProps) {
     window.location.reload();
   };
 
-  if (loading) return <div className="min-h-screen bg-neutral-950 text-white flex items-center justify-center font-sans">Carregando Painel...</div>;
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-neutral-950 text-white flex flex-col items-center justify-center font-sans gap-3">
+        <div className={`w-6 h-6 border-2 ${ehEstetica ? 'border-pink-500' : 'border-amber-500'} border-t-transparent rounded-full animate-spin`}></div>
+        <span className="text-xs uppercase font-bold tracking-wider text-neutral-400">Carregando Painel...</span>
+      </div>
+    );
+  }
+
+  // TELA DE BLOQUEIO POR SENHA
+  if (!autenticado) {
+    return (
+      <main className="min-h-screen bg-neutral-950 text-white flex items-center justify-center px-4 font-sans user-select-none">
+        <div className="max-w-sm w-full bg-neutral-900 border border-neutral-800 p-8 rounded-2xl shadow-2xl space-y-6 text-center">
+          <div className="space-y-2">
+            <span className="text-4xl">🔒</span>
+            <h1 className="text-xl font-black uppercase tracking-tight pt-2">Área Restrita</h1>
+            <p className="text-neutral-400 text-xs uppercase tracking-wide">Insira o código de acesso para gerenciar /{tenant}</p>
+          </div>
+
+          <form onSubmit={handleVerificarCodigoAcesso} className="space-y-4 text-left">
+            <div>
+              <label className="block text-[10px] font-black uppercase text-neutral-500 mb-1.5 tracking-wider">Código de Segurança</label>
+              <input
+                type="password"
+                placeholder="••••"
+                value={codigoDigitado}
+                onChange={(e) => setCodigoDigitado(e.target.value)}
+                className={`w-full text-center p-3.5 bg-neutral-950 border border-neutral-800 ${ehEstetica ? 'focus:border-pink-500' : 'focus:border-amber-500'} rounded-xl text-lg font-mono tracking-widest text-white focus:outline-none`}
+                required
+              />
+            </div>
+
+            {erroAutenticacao && (
+              <p className="text-xs text-red-500 font-semibold bg-red-500/10 border border-red-500/20 p-2 rounded-lg text-center">
+                {erroAutenticacao}
+              </p>
+            )}
+
+            <button
+              type="submit"
+              className={`w-full py-3.5 ${ehEstetica ? 'bg-pink-500 hover:bg-pink-400' : 'bg-amber-500 hover:bg-amber-400 text-neutral-950'} font-black text-xs uppercase tracking-widest rounded-xl transition-all shadow-lg cursor-pointer`}
+            >
+              Acessar Painel ➔
+            </button>
+          </form>
+          
+          <button onClick={() => router.push(`/${tenant}`)} className="text-[11px] text-neutral-500 hover:text-neutral-400 uppercase font-bold tracking-wide transition-colors block mx-auto pt-2">
+            ← Voltar para o Site
+          </button>
+        </div>
+      </main>
+    );
+  }
 
   return (
-    <main className="min-h-screen bg-neutral-950 text-white p-4 sm:p-8 md:p-12 font-sans selection:bg-pink-500">
+    <main className={`min-h-screen bg-neutral-950 text-white p-4 sm:p-8 md:p-12 font-sans ${ehEstetica ? 'selection:bg-pink-500' : 'selection:bg-amber-500 selection:text-black'}`}>
       <div className="max-w-5xl mx-auto space-y-12">
         
         {/* Topo */}
         <div className="flex justify-between items-center border-b border-neutral-900 pb-6">
           <div>
             <h1 className="text-3xl font-black uppercase tracking-tight">Painel Admin</h1>
-            <p className="text-neutral-500 text-xs uppercase font-semibold">Link ativo: /{tenant}</p>
+            <p className="text-neutral-500 text-xs uppercase font-semibold mt-1">Nicho ativo: <span className={ehEstetica ? 'text-pink-500' : 'text-amber-500'}>{ehEstetica ? "Estética" : "Personal Trainer"}</span></p>
           </div>
-          <button onClick={() => router.push(`/${tenant}`)} className="px-4 py-2 border border-neutral-800 rounded-xl text-xs font-bold uppercase hover:bg-white hover:text-black transition-colors">Visualizar Site ↗</button>
-        </div>
-
-        {/* Agendamentos */}
-        <section className="bg-neutral-900/20 border border-neutral-900 rounded-2xl p-6 space-y-4">
-          <h2 className="text-lg font-black uppercase text-pink-500">🗓️ Próximos Agendamentos ({agendamentos.length})</h2>
-          {agendamentos.length === 0 ? <p className="text-xs text-neutral-500 italic py-2">Nenhum horário agendado ainda.</p> : (
-            <div className="space-y-3">
-              {agendamentos.map((agend) => (
-                <div key={agend.id} className="bg-neutral-950 border border-neutral-900 rounded-xl p-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-3">
-                      <h3 className="font-bold text-sm text-white uppercase">{agend.nome_cliente}</h3>
-                      <span className="bg-neutral-900 border border-neutral-800 text-neutral-400 font-mono text-[11px] px-2 py-0.5 rounded-md">{agend.data_agendamento?.split("-").reverse().join("/")} às {agend.hora_agendamento}</span>
-                    </div>
-                    <p className="text-xs text-neutral-400">Procedimento: <span className="text-pink-500 font-semibold">{agend.servico_nome}</span></p>
-                    <p className="text-[11px] text-neutral-500 font-mono">Contato: {agend.whatsapp_cliente}</p>
-                  </div>
-                  <div className="flex items-center gap-3 w-full md:w-auto">
-                    <button onClick={() => enviarConfirmacaoWhatsApp(agend)} className="flex-1 md:flex-initial px-4 py-2 bg-green-600 text-white font-black text-xs uppercase rounded-lg cursor-pointer">Confirmar no Whats 💬</button>
-                    <button onClick={() => handleDeletarAgendamento(agend.id)} className="p-2 bg-neutral-900 border border-neutral-800 text-neutral-400 hover:text-red-500 rounded-lg text-xs cursor-pointer">🗑️</button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </section>
-
-        {/* CONTROLE DE DIAS E HORÁRIOS ABERTOS/FECHADOS */}
-        <section className="bg-neutral-900/30 border border-neutral-900 rounded-2xl p-6 space-y-6">
-          <div>
-            <h2 className="text-lg font-black uppercase text-pink-500">⚙️ Configuração da Agenda Semanal</h2>
-            <p className="text-neutral-500 text-xs uppercase mt-0.5">Selecione o dia e gerencie as janelas de horários livres no seu site</p>
-          </div>
-
-          <div className="flex flex-wrap gap-1.5 border-b border-neutral-900 pb-4">
-            {diasDaSemanaTexto.map((diaNome, idx) => (
-              <button
-                key={idx}
-                type="button"
-                onClick={() => handleTrocarDiaAbas(idx)}
-                className={`px-3 py-2 text-xs font-bold rounded-lg border transition-all cursor-pointer ${
-                  diaSelecionadoConfig === idx
-                    ? "bg-pink-500 border-pink-500 text-white"
-                    : "bg-neutral-950 border-neutral-800 text-neutral-400 hover:border-neutral-700"
-                }`}
-              >
-                {diaNome}
-              </button>
-            ))}
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pt-2">
-            <div className="space-y-3 md:col-span-1 bg-neutral-950 p-4 rounded-xl border border-neutral-900">
-              <h3 className="text-xs font-black uppercase tracking-wider text-neutral-300">Status do Dia</h3>
-              <div className="flex items-center gap-3 pt-2">
-                <input
-                  type="checkbox"
-                  id="fechado-check"
-                  checked={estaFechado}
-                  onChange={(e) => setEstaFechado(e.target.checked)}
-                  className="w-4 h-4 rounded text-pink-500 bg-neutral-900 border-neutral-800 focus:ring-0 cursor-pointer"
-                />
-                <label htmlFor="fechado-check" className="text-xs font-black uppercase tracking-wider text-neutral-200 cursor-pointer select-none">
-                  Estarei Fechado neste dia
-                </label>
-              </div>
-              <p className="text-[11px] text-neutral-500 leading-relaxed pt-2">
-                Marcar a caixa acima desativa completamente o calendário no site público para qualquer data que caia neste dia da semana.
-              </p>
-            </div>
-
-            <div className="md:col-span-2 space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <h3 className="text-xs font-black uppercase tracking-wider text-neutral-300">
-                  Horários Ativos ({estaFechado ? "Bloqueado" : horariosDoDia.length})
-                </h3>
-                
-                {!estaFechado && (
-                  <form onSubmit={handleAdicionarHoraLista} className="flex gap-2">
-                    <input
-                      type="time"
-                      value={novoHoraInput}
-                      onChange={(e) => setNovoHoraInput(e.target.value)}
-                      className="p-2 bg-neutral-950 border border-neutral-800 rounded-lg text-xs font-mono text-white focus:outline-none focus:border-pink-500"
-                      required
-                    />
-                    <button type="submit" className="px-3 py-2 bg-white text-black font-black text-xs uppercase rounded-lg hover:bg-neutral-200 cursor-pointer">
-                      + Adicionar
-                    </button>
-                  </form>
-                )}
-              </div>
-
-              {estaFechado ? (
-                <div className="py-8 bg-red-950/20 border border-dashed border-red-900/40 rounded-xl text-center">
-                  <p className="text-xs text-red-400 font-bold uppercase tracking-wider">🔒 Estabelecimento Fechado</p>
-                </div>
-              ) : horariosDoDia.length === 0 ? (
-                <div className="py-8 bg-neutral-950 border border-dashed border-neutral-800 rounded-xl text-center">
-                  <p className="text-xs text-neutral-500 italic">Nenhum horário configurado para este dia.</p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 bg-neutral-950/40 p-4 border border-neutral-900 rounded-xl">
-                  {horariosDoDia.map((hora) => (
-                    <div
-                      key={hora}
-                      className="relative bg-neutral-950 border border-neutral-800 hover:border-neutral-700 p-2 rounded-lg font-mono text-xs text-center flex items-center justify-between group"
-                    >
-                      <span className="w-full font-bold text-neutral-300">{hora}</span>
-                      <button
-                        type="button"
-                        onClick={() => handleRemoverHoraLista(hora)}
-                        className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-red-600 hover:bg-red-500 text-white text-[9px] font-black rounded-full flex items-center justify-center cursor-pointer shadow-md"
-                        title="Remover horário"
-                      >
-                        ×
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="flex justify-end border-t border-neutral-900 pt-4">
-            <button
-              type="button"
-              onClick={handleSalvarConfigAgenda}
-              disabled={salvandoAgenda}
-              className="px-5 py-2.5 bg-pink-500 text-white font-black text-xs uppercase tracking-wider rounded-xl hover:bg-pink-400 transition-colors disabled:opacity-50 cursor-pointer"
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={() => router.push(`/${tenant}`)} 
+              className="px-4 py-2 border border-neutral-800 rounded-xl text-xs font-bold uppercase hover:bg-white hover:text-black hover:border-white transition-all cursor-pointer"
             >
-              {salvandoAgenda ? "Salvando Configuração..." : `Salvar Agenda de ${diasDaSemanaTexto[diaSelecionadoConfig]}`}
+              Visualizar Site ↗
+            </button>
+            <button 
+              onClick={handleLogout} 
+              className="px-4 py-2 bg-red-600/10 border border-red-500/20 text-red-400 rounded-xl text-xs font-bold uppercase hover:bg-red-600 hover:text-white hover:border-red-600 transition-all cursor-pointer"
+            >
+              Sair do Painel 🚪
             </button>
           </div>
-        </section>
+        </div>
 
-        {/* 1. Dados do Espaço e Imagens Gerais do Site */}
-        <section className="bg-neutral-900/30 border border-neutral-900 rounded-2xl p-6">
-          <h2 className="text-lg font-black uppercase text-pink-500 mb-6">1. Dados e Fotos do Espaço</h2>
-          <form onSubmit={handleSalvarDadosCliente} className="space-y-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-xs font-bold uppercase text-neutral-400 mb-2">WhatsApp de Atendimento</label>
-                <input type="text" value={whatsappNumero} onChange={(e) => setWhatsappNumero(e.target.value)} className="w-full p-3 bg-neutral-950 border border-neutral-800 rounded-xl text-sm text-white focus:outline-none" />
+        {/* SEÇÃO CONDICIONAL: SÓ EXPÕE AGENDAMENTOS SE FOR NICHO ESTÉTICA */}
+        {ehEstetica && (
+          <section className="bg-neutral-900/20 border border-neutral-900 rounded-2xl p-6 space-y-4">
+            <h2 className="text-lg font-black uppercase text-pink-500">🗓️ Próximos Agendamentos ({agendamentos.length})</h2>
+            {agendamentos.length === 0 ? (
+              <p className="text-xs text-neutral-500 italic py-2">Nenhum horário agendado ainda.</p>
+            ) : (
+              <div className="space-y-3">
+                {agendamentos.map((agend) => (
+                  <div key={agend.id} className="bg-neutral-950 border border-neutral-900 rounded-xl p-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hover:border-neutral-800 transition-colors">
+                    <div className="space-y-1">
+                      <div className="flex flex-wrap items-center gap-3">
+                        <h3 className="font-bold text-sm text-white uppercase">{agend.nome_cliente}</h3>
+                        <span className="bg-neutral-900 border border-neutral-800 text-neutral-400 font-mono text-[11px] px-2 py-0.5 rounded-md">
+                          {agend.data_agendamento?.split("-").reverse().join("/")} às {agend.hora_agendamento}
+                        </span>
+                      </div>
+                      <p className="text-xs text-neutral-400">Procedimento: <span className="text-pink-500 font-semibold">{agend.servico_nome}</span></p>
+                      <p className="text-[11px] text-neutral-500 font-mono">Contato: {agend.whatsapp_cliente}</p>
+                    </div>
+                    <div className="flex items-center gap-3 w-full md:w-auto">
+                      <button 
+                        onClick={() => enviarConfirmacaoWhatsApp(agend)} 
+                        className="flex-1 md:flex-initial px-4 py-2 bg-green-600 hover:bg-green-500 transition-colors text-white font-black text-xs uppercase rounded-lg cursor-pointer text-center"
+                      >
+                        Confirmar no Whats 💬
+                    </button>
+                      <button 
+                        onClick={() => handleDeletarAgendamento(agend.id)} 
+                        className="p-2 bg-neutral-900 border border-neutral-800 text-neutral-400 hover:text-red-500 rounded-lg text-xs cursor-pointer transition-colors"
+                      >
+                        🗑️
+                      </button>
+                    </div>
+                  </div>
+                ))}
               </div>
-              <div>
-                <label className="block text-xs font-bold uppercase text-neutral-400 mb-2">Iniciais do Logo</label>
-                <input type="text" value={navbarIniciais} onChange={(e) => setNavbarIniciais(e.target.value)} className="w-full p-3 bg-neutral-950 border border-neutral-800 rounded-xl text-sm uppercase text-white focus:outline-none" />
-              </div>
+            )}
+          </section>
+        )}
+
+        {/* CONFIGURAÇÃO DA AGENDA: SÓ SE FOR ESTÉTICA */}
+        {ehEstetica && (
+          <section className="bg-neutral-900/30 border border-neutral-900 rounded-2xl p-6 space-y-6">
+            <div>
+              <h2 className="text-lg font-black uppercase text-pink-500">⚙️ Configuração da Agenda Semanal</h2>
+              <p className="text-neutral-500 text-xs uppercase mt-0.5">Selecione o dia e gerencie as janelas de horários livres no seu site</p>
             </div>
 
-            {/* HERO */}
-            <div className="border-t border-neutral-900 pt-6 space-y-3">
-              <h3 className="text-xs font-black uppercase text-neutral-300 tracking-wider">Foto Principal de Entrada (Seção Inicial)</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-neutral-950 border border-neutral-800 rounded-xl p-4 flex flex-col justify-between">
-                  <input type="file" accept="image/*" onChange={(e) => handleUploadFotoCliente(e, "hero")} className="text-xs text-neutral-400 file:bg-neutral-800 file:text-white cursor-pointer" />
-                </div>
-                <div className="bg-neutral-950 border border-neutral-800 rounded-xl p-4 flex flex-col justify-between">
-                  <input type="text" value={fotoHero} onChange={(e) => setFotoHero(e.target.value)} placeholder="https://..." className="w-full p-2.5 bg-neutral-900 border border-neutral-800 rounded-lg text-xs text-neutral-300 focus:outline-none focus:border-pink-500" />
-                </div>
-              </div>
-              {fotoHero && (
-                <div className="mt-2 p-1.5 bg-neutral-900/60 rounded-lg border border-neutral-800 w-fit">
-                  <img src={fotoHero} alt="Preview Hero" className="w-20 h-12 rounded object-cover border border-neutral-700" />
-                </div>
-              )}
+            <div className="flex flex-wrap gap-1.5 border-b border-neutral-900 pb-4">
+              {diasDaSemanaTexto.map((diaNome, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => handleTrocarDiaAbas(idx)}
+                  className={`px-3 py-2 text-xs font-bold rounded-lg border transition-all cursor-pointer ${
+                    diaSelecionadoConfig === idx
+                      ? "bg-pink-500 border-pink-500 text-white shadow-lg shadow-pink-500/20"
+                      : "bg-neutral-950 border-neutral-800 text-neutral-400 hover:border-neutral-700 hover:text-white"
+                  }`}
+                >
+                  {diaNome}
+                </button>
+              ))}
             </div>
 
-            {/* SOBRE */}
-            <div className="border-t border-neutral-900 pt-6 space-y-3">
-              <h3 className="text-xs font-black uppercase text-neutral-300 tracking-wider">Foto de Apresentação (Seção Sobre Mim)</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-neutral-950 border border-neutral-800 rounded-xl p-4 flex flex-col justify-between">
-                  <input type="file" accept="image/*" onChange={(e) => handleUploadFotoCliente(e, "sobre")} className="text-xs text-neutral-400 file:bg-neutral-800 file:text-white cursor-pointer" />
-                </div>
-                <div className="bg-neutral-950 border border-neutral-800 rounded-xl p-4 flex flex-col justify-between">
-                  <input type="text" value={fotoSobre} onChange={(e) => setFotoSobre(e.target.value)} placeholder="https://..." className="w-full p-2.5 bg-neutral-900 border border-neutral-800 rounded-lg text-xs text-neutral-300 focus:outline-none focus:border-pink-500" />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pt-2">
+              <div className="space-y-3 md:col-span-1 bg-neutral-950 p-4 rounded-xl border border-neutral-900">
+                <h3 className="text-xs font-black uppercase tracking-wider text-neutral-300">Status do Dia</h3>
+                <div className="flex items-center gap-3 pt-2">
+                  <input type="checkbox" id="fechado-check" checked={estaFechado} onChange={(e) => setEstaFechado(e.target.checked)} className="w-4 h-4 rounded text-pink-500 bg-neutral-900 border-neutral-800 focus:ring-0 cursor-pointer accent-pink-500" />
+                  <label htmlFor="fechado-check" className="text-xs font-black uppercase tracking-wider text-neutral-200 cursor-pointer select-none">Estarei Fechado neste dia</label>
                 </div>
               </div>
-              {fotoSobre && (
-                <div className="mt-2 p-1.5 bg-neutral-900/60 rounded-lg border border-neutral-800 w-fit">
-                  <img src={fotoSobre} alt="Preview Sobre" className="w-20 h-12 rounded object-cover border border-neutral-700" />
-                </div>
-              )}
-            </div>
 
-            {/* 🔥 SEÇÃO COMPLETA: CARDS INFORMATIVOS (COMO VOU TE AJUDAR) */}
-            <div className="border-t border-neutral-900 pt-6 space-y-6">
-              <div>
-                <h3 className="text-sm font-black uppercase text-pink-500 tracking-wider">Fotos dos Cards Informativos (Seção Como vou te ajudar)</h3>
-                <p className="text-neutral-500 text-xs mt-0.5 uppercase">Altere as imagens que aparecem nos 3 blocos informativos da página principal</p>
-              </div>
+              <div className="md:col-span-2 space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <h3 className="text-xs font-black uppercase tracking-wider text-neutral-300">Horários Ativos ({estaFechado ? "Bloqueado" : horariosDoDia.length})</h3>
+                  {!estaFechado && (
+                    <form onSubmit={handleAdicionarHoraLista} className="flex gap-2">
+                      <input type="time" value={novoHoraInput} onChange={(e) => setNovoHoraInput(e.target.value)} className="p-2 bg-neutral-950 border border-neutral-800 rounded-lg text-xs font-mono text-white focus:outline-none focus:border-pink-500" required />
+                      <button type="submit" className="px-3 py-2 bg-white text-black font-black text-xs uppercase rounded-lg hover:bg-neutral-200 cursor-pointer whitespace-nowrap">+ Adicionar</button>
+                    </form>
+                  )}
+                </div>
 
-              {/* CARD 1 */}
-              <div className="space-y-3 bg-neutral-950 p-4 rounded-xl border border-neutral-900">
-                <div className="flex justify-between items-center">
-                  <p className="text-xs font-black text-neutral-300 uppercase tracking-wide">Card 1: Alongamento em Gel / Emagrecimento</p>
-                  {imgObjetivo1 && <span className="text-[10px] bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded font-bold uppercase">Imagem Ativa ✓</span>}
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="bg-neutral-900/40 p-3 rounded-lg border border-neutral-800 flex flex-col justify-center">
-                    <label className="block text-[11px] font-bold uppercase text-neutral-400 mb-2">Opção A: Upload de arquivo</label>
-                    <input type="file" accept="image/*" onChange={(e) => handleUploadFotoObjetivo(e, 1)} className="text-xs text-neutral-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:bg-neutral-800 file:text-white file:border-none cursor-pointer w-full" />
-                    {subindoObjetivo[1] && <span className="text-xs text-pink-500 animate-pulse mt-1.5 font-bold">Enviando arquivo...</span>}
-                  </div>
-                  <div className="bg-neutral-900/40 p-3 rounded-lg border border-neutral-800">
-                    <label className="block text-[11px] font-bold uppercase text-neutral-400 mb-2">Opção B: Link direto (URL)</label>
-                    <input type="text" value={imgObjetivo1} onChange={(e) => setImgObjetivo1(e.target.value)} placeholder="https://images.unsplash.com/..." className="w-full p-2.5 bg-neutral-950 border border-neutral-800 rounded-lg text-xs text-neutral-300 focus:outline-none focus:border-pink-500" />
-                  </div>
-                </div>
-                {imgObjetivo1 && (
-                  <div className="mt-2 p-1.5 bg-neutral-900/60 rounded-lg border border-neutral-800 w-fit">
-                    <img src={imgObjetivo1} alt="Preview Card 1" className="w-20 h-12 rounded object-cover border border-neutral-700" />
-                  </div>
-                )}
-              </div>
-
-              {/* CARD 2 */}
-              <div className="space-y-3 bg-neutral-950 p-4 rounded-xl border border-neutral-900">
-                <div className="flex justify-between items-center">
-                  <p className="text-xs font-black text-neutral-300 uppercase tracking-wide">Card 2: Manutenção Perfeita / Hipertrofia</p>
-                  {imgObjetivo2 && <span className="text-[10px] bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded font-bold uppercase">Imagem Ativa ✓</span>}
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="bg-neutral-900/40 p-3 rounded-lg border border-neutral-800 flex flex-col justify-center">
-                    <label className="block text-[11px] font-bold uppercase text-neutral-400 mb-2">Opção A: Upload de arquivo</label>
-                    <input type="file" accept="image/*" onChange={(e) => handleUploadFotoObjetivo(e, 2)} className="text-xs text-neutral-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:bg-neutral-800 file:text-white file:border-none cursor-pointer w-full" />
-                    {subindoObjetivo[2] && <span className="text-xs text-pink-500 animate-pulse mt-1.5 font-bold">Enviando arquivo...</span>}
-                  </div>
-                  <div className="bg-neutral-900/40 p-3 rounded-lg border border-neutral-800">
-                    <label className="block text-[11px] font-bold uppercase text-neutral-400 mb-2">Opção B: Link direto (URL)</label>
-                    <input type="text" value={imgObjetivo2} onChange={(e) => setImgObjetivo2(e.target.value)} placeholder="https://images.unsplash.com/..." className="w-full p-2.5 bg-neutral-950 border border-neutral-800 rounded-lg text-xs text-neutral-300 focus:outline-none focus:border-pink-500" />
-                  </div>
-                </div>
-                {imgObjetivo2 && (
-                  <div className="mt-2 p-1.5 bg-neutral-900/60 rounded-lg border border-neutral-800 w-fit">
-                    <img src={imgObjetivo2} alt="Preview Card 2" className="w-20 h-12 rounded object-cover border border-neutral-700" />
-                  </div>
-                )}
-              </div>
-
-              {/* CARD 3 */}
-              <div className="space-y-3 bg-neutral-950 p-4 rounded-xl border border-neutral-900">
-                <div className="flex justify-between items-center">
-                  <p className="text-xs font-black text-neutral-300 uppercase tracking-wide">Card 3: Blindagem de Unhas / Definição Muscular</p>
-                  {imgObjetivo3 && <span className="text-[10px] bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded font-bold uppercase">Imagem Ativa ✓</span>}
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="bg-neutral-900/40 p-3 rounded-lg border border-neutral-800 flex flex-col justify-center">
-                    <label className="block text-[11px] font-bold uppercase text-neutral-400 mb-2">Opção A: Upload de arquivo</label>
-                    <input type="file" accept="image/*" onChange={(e) => handleUploadFotoObjetivo(e, 3)} className="text-xs text-neutral-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:bg-neutral-800 file:text-white file:border-none cursor-pointer w-full" />
-                    {subindoObjetivo[3] && <span className="text-xs text-pink-500 animate-pulse mt-1.5 font-bold">Enviando arquivo...</span>}
-                  </div>
-                  <div className="bg-neutral-900/40 p-3 rounded-lg border border-neutral-800">
-                    <label className="block text-[11px] font-bold uppercase text-neutral-400 mb-2">Opção B: Link direto (URL)</label>
-                    <input type="text" value={imgObjetivo3} onChange={(e) => setImgObjetivo3(e.target.value)} placeholder="https://images.unsplash.com/..." className="w-full p-2.5 bg-neutral-950 border border-neutral-800 rounded-lg text-xs text-neutral-300 focus:outline-none focus:border-pink-500" />
-                  </div>
-                </div>
-                {imgObjetivo3 && (
-                  <div className="mt-2 p-1.5 bg-neutral-900/60 rounded-lg border border-neutral-800 w-fit">
-                    <img src={imgObjetivo3} alt="Preview Card 3" className="w-20 h-12 rounded object-cover border border-neutral-700" />
+                {estaFechado ? (
+                  <div className="py-8 bg-red-950/10 border border-dashed border-red-900/40 rounded-xl text-center"><p className="text-xs text-red-400 font-bold uppercase tracking-wider">🔒 Estabelecimento Fechado</p></div>
+                ) : (
+                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 bg-neutral-950/40 p-4 border border-neutral-900 rounded-xl">
+                    {horariosDoDia.map((hora) => (
+                      <div key={hora} className="relative bg-neutral-950 border border-neutral-800 p-2 rounded-lg font-mono text-xs text-center flex items-center justify-center">
+                        <span className="font-bold text-neutral-300">{hora}</span>
+                        <button type="button" onClick={() => handleRemoverHoraLista(hora)} className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-red-600 text-white text-[9px] rounded-full flex items-center justify-center cursor-pointer">×</button>
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>
             </div>
 
             <div className="flex justify-end border-t border-neutral-900 pt-4">
-              <button type="submit" disabled={salvandoCliente} className="px-6 py-3 bg-pink-500 text-white text-xs font-black uppercase rounded-xl hover:bg-pink-400 transition-colors disabled:opacity-50 cursor-pointer">Salvar Alterações Globais</button>
+              <button type="button" onClick={handleSalvarConfigAgenda} disabled={salvandoAgenda} className="px-5 py-2.5 bg-pink-500 text-white font-black text-xs uppercase rounded-xl hover:bg-pink-400 disabled:opacity-50 cursor-pointer">Salvar Agenda</button>
+            </div>
+          </section>
+        )}
+
+        {/* Bloco 1: Informações Gerais */}
+        <section className="bg-neutral-900/30 border border-neutral-900 rounded-2xl p-6">
+          <h2 className={`text-lg font-black uppercase ${ehEstetica ? 'text-pink-500' : 'text-amber-500'} mb-6`}>1. Informações da Identidade Profissional</h2>
+          <form onSubmit={handleSalvarDadosCliente} className="space-y-8">
+            
+            {/* GRUPO BASE */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-xs font-bold uppercase text-neutral-400 mb-2">WhatsApp de Atendimento</label>
+                <input type="text" value={whatsappNumero} onChange={(e) => setWhatsappNumero(e.target.value)} className="w-full p-3 bg-neutral-950 border border-neutral-800 rounded-xl text-sm text-white focus:outline-none" />
+              </div>
+              <div>
+                <label className="block text-xs font-bold uppercase text-neutral-400 mb-2">Iniciais da Marca (Logo)</label>
+                <input type="text" value={navbarIniciais} onChange={(e) => setNavbarIniciais(e.target.value)} className="w-full p-3 bg-neutral-950 border border-neutral-800 rounded-xl text-sm uppercase text-white focus:outline-none" />
+              </div>
+            </div>
+
+            {/* 🔥 NOVOS INPUTS EXCLUSIVOS PARA O NICHO DO PERSONAL TRAINER */}
+            {!ehEstetica && (
+              <div className="border-t border-neutral-900 pt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-xs font-bold uppercase text-amber-500 mb-2">Link do perfil do Instagram (URL)</label>
+                  <input type="text" value={instagramUrl} onChange={(e) => setInstagramUrl(e.target.value)} placeholder="https://instagram.com/seu_perfil" className="w-full p-3 bg-neutral-950 border border-neutral-800 rounded-xl text-sm text-white focus:outline-none focus:border-amber-500" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold uppercase text-amber-500 mb-2">Link de Pagamento Direto / Checkout (Opcional)</label>
+                  <input type="text" value={checkoutUrl} onChange={(e) => setCheckoutUrl(e.target.value)} placeholder="Link da Hotmart, Kiwify, Eduzz..." className="w-full p-3 bg-neutral-950 border border-neutral-800 rounded-xl text-sm text-white focus:outline-none focus:border-amber-500" />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-xs font-bold uppercase text-amber-500 mb-2">Suas Certificações e Formação (Exibido no Sobre Mim)</label>
+                  <textarea rows={3} value={certificacoes} onChange={(e) => setCertificacoes(e.target.value)} placeholder="Ex: Graduado em Ed. Física (USP) / Pós-graduado em Fisiologia do Exercício / Certificado Internacional em Biomecânica..." className="w-full p-3 bg-neutral-950 border border-neutral-800 rounded-xl text-sm text-white focus:outline-none focus:border-amber-500 font-sans resize-none" />
+                </div>
+              </div>
+            )}
+
+            {/* HERO FOTO */}
+            <div className="border-t border-neutral-900 pt-6 space-y-3">
+              <h3 className="text-xs font-black uppercase text-neutral-300 tracking-wider">Foto Principal de Capa (Banner Superior)</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-neutral-950 border border-neutral-800 rounded-xl p-4 flex flex-col justify-center">
+                  <input type="file" accept="image/*" onChange={(e) => handleUploadFotoCliente(e, "hero")} className="text-xs text-neutral-400 cursor-pointer" />
+                </div>
+                <div className="bg-neutral-950 border border-neutral-800 rounded-xl p-4 flex flex-col justify-center">
+                  <input type="text" value={fotoHero} onChange={(e) => setFotoHero(e.target.value)} placeholder="Ou cole a URL..." className="w-full p-2.5 bg-neutral-900 border border-neutral-800 rounded-lg text-xs" />
+                </div>
+              </div>
+            </div>
+
+            {/* SOBRE FOTO */}
+            <div className="border-t border-neutral-900 pt-6 space-y-3">
+              <h3 className="text-xs font-black uppercase text-neutral-300 tracking-wider">Foto de Perfil (Seção Quem Sou / História)</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-neutral-950 border border-neutral-800 rounded-xl p-4 flex flex-col justify-center">
+                  <input type="file" accept="image/*" onChange={(e) => handleUploadFotoCliente(e, "sobre")} className="text-xs text-neutral-400 cursor-pointer" />
+                </div>
+                <div className="bg-neutral-950 border border-neutral-800 rounded-xl p-4 flex flex-col justify-center">
+                  <input type="text" value={fotoSobre} onChange={(e) => setFotoSobre(e.target.value)} placeholder="Ou cole a URL..." className="w-full p-2.5 bg-neutral-900 border border-neutral-800 rounded-lg text-xs" />
+                </div>
+              </div>
+            </div>
+
+            {/* FOTOS DOS CARDS BASEADAS NO NICHO */}
+            <div className="border-t border-neutral-900 pt-6 space-y-6">
+              <div>
+                <h3 className={`text-sm font-black uppercase ${ehEstetica ? 'text-pink-500' : 'text-amber-500'} tracking-wider`}>Imagens dos Blocos de Entrega (Como eu vou te ajudar)</h3>
+              </div>
+
+              {/* CARD 1 */}
+              <div className="space-y-3 bg-neutral-950 p-4 rounded-xl border border-neutral-900">
+                <p className="text-xs font-black text-neutral-300 uppercase">{ehEstetica ? "Card 1: Alongamento em Gel" : "Card 1: Foco Emagrecimento"}</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <input type="file" accept="image/*" onChange={(e) => handleUploadFotoObjetivo(e, 1)} className="text-xs text-neutral-400 cursor-pointer" />
+                  <input type="text" value={imgObjetivo1} onChange={(e) => setImgObjetivo1(e.target.value)} placeholder="URL da Imagem..." className="w-full p-2.5 bg-neutral-900 border border-neutral-800 rounded-lg text-xs" />
+                </div>
+              </div>
+
+              {/* CARD 2 */}
+              <div className="space-y-3 bg-neutral-950 p-4 rounded-xl border border-neutral-900">
+                <p className="text-xs font-black text-neutral-300 uppercase">{ehEstetica ? "Card 2: Manutenção Perfeita" : "Card 2: Foco Hipertrofia"}</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <input type="file" accept="image/*" onChange={(e) => handleUploadFotoObjetivo(e, 2)} className="text-xs text-neutral-400 cursor-pointer" />
+                  <input type="text" value={imgObjetivo2} onChange={(e) => setImgObjetivo2(e.target.value)} placeholder="URL da Imagem..." className="w-full p-2.5 bg-neutral-900 border border-neutral-800 rounded-lg text-xs" />
+                </div>
+              </div>
+
+              {/* CARD 3 */}
+              <div className="space-y-3 bg-neutral-950 p-4 rounded-xl border border-neutral-900">
+                <p className="text-xs font-black text-neutral-300 uppercase">{ehEstetica ? "Card 3: Blindagem de Unhas" : "Card 3: Foco Definição Muscular"}</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <input type="file" accept="image/*" onChange={(e) => handleUploadFotoObjetivo(e, 3)} className="text-xs text-neutral-400 cursor-pointer" />
+                  <input type="text" value={imgObjetivo3} onChange={(e) => setImgObjetivo3(e.target.value)} placeholder="URL da Imagem..." className="w-full p-2.5 bg-neutral-900 border border-neutral-800 rounded-lg text-xs" />
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end border-t border-neutral-900 pt-4">
+              <button type="submit" disabled={salvandoCliente} className={`px-6 py-3 ${ehEstetica ? 'bg-pink-500 hover:bg-pink-400' : 'bg-amber-500 hover:bg-amber-400 text-neutral-950'} text-xs font-black uppercase rounded-xl disabled:opacity-50 cursor-pointer`}>
+                {salvandoCliente ? "Salvando..." : "Salvar Configurações"}
+              </button>
             </div>
           </form>
         </section>
 
-        {/* 2. Serviços Ativos */}
+        {/* Módulo 2: Planos / Procedimentos */}
         <section className="space-y-4">
-          <h2 className="text-lg font-black uppercase text-pink-500">2. Procedimentos Ativos ({servicos.length})</h2>
+          <h2 className={`text-lg font-black uppercase ${ehEstetica ? 'text-pink-500' : 'text-amber-500'}`}>{ehEstetica ? "2. Procedimentos e Preços Cadastrados" : "2. Planos de Consultoria Ativos"}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {servicos.map((s) => (
-              <div key={s.id} className="bg-neutral-900/40 border border-neutral-900 p-4 rounded-xl flex items-center justify-between gap-4">
+              <div key={s.id} className="bg-neutral-900/40 border border-neutral-900 p-4 rounded-xl flex items-center justify-between gap-4 hover:border-neutral-800 transition-colors">
                 <div className="flex items-center gap-3">
                   {s.imagem_url && <img src={s.imagem_url} alt="" className="w-12 h-12 rounded-lg object-cover border border-neutral-800" />}
                   <div>
@@ -614,83 +665,52 @@ export default function AdminPanel({ params }: AdminPanelProps) {
           </div>
         </section>
 
-        {/* 3. Form Serviços */}
+        {/* Módulo 3: Formulário de Adição */}
         <section id="formulario-servico" className="bg-neutral-900/30 border border-neutral-900 rounded-2xl p-6 scroll-mt-6">
-          <h2 className="text-lg font-black uppercase text-pink-500 mb-4">{idServicoEditando ? "⚡ Editando Procedimento" : "➕ Adicionar Novo Procedimento"}</h2>
+          <h2 className={`text-lg font-black uppercase ${ehEstetica ? 'text-pink-500' : 'text-amber-500'} mb-4`}>
+            {idServicoEditando ? "⚡ Editando Item" : ehEstetica ? "➕ Cadastrar Novo Procedimento" : "➕ Adicionar Novo Plano de Treino"}
+          </h2>
           <form onSubmit={handleSalvarServico} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-xs font-bold uppercase text-neutral-400 mb-2">Nome do Serviço</label>
-                <input type="text" value={nomeServico} onChange={(e) => setNomeServico(e.target.value)} className="w-full p-3 bg-neutral-950 border border-neutral-800 rounded-xl text-sm focus:outline-none focus:border-pink-500 text-white" required />
+                <label className="block text-xs font-bold uppercase text-neutral-400 mb-2">{ehEstetica ? "Nome do Serviço" : "Título do Plano (Ex: Trimestral Premium)"}</label>
+                <input type="text" value={nomeServico} onChange={(e) => setNomeServico(e.target.value)} className="w-full p-3 bg-neutral-950 border border-neutral-800 rounded-xl text-sm text-white" required />
               </div>
               <div>
-                <label className="block text-xs font-bold uppercase text-neutral-400 mb-2">Preço Padrão (R$)</label>
-                <input type="number" step="0.01" value={precoServico} onChange={(e) => setPrecoServico(e.target.value)} className="w-full p-3 bg-neutral-950 border border-neutral-800 rounded-xl text-sm focus:outline-none focus:border-pink-500 text-white" required />
+                <label className="block text-xs font-bold uppercase text-neutral-400 mb-2">Valor Cobrado (R$)</label>
+                <input type="number" step="0.01" value={precoServico} onChange={(e) => setPrecoServico(e.target.value)} className="w-full p-3 bg-neutral-950 border border-neutral-800 rounded-xl text-sm text-white" required />
               </div>
               <div className="md:col-span-2">
-                <label className="block text-xs font-bold uppercase text-neutral-400 mb-2">Descrição Curta</label>
-                <input type="text" value={descricaoServico} onChange={(e) => setDescricaoServico(e.target.value)} className="w-full p-3 bg-neutral-950 border border-neutral-800 rounded-xl text-sm focus:outline-none" />
+                <label className="block text-xs font-bold uppercase text-neutral-400 mb-2">O que está incluso (Breve descrição)</label>
+                <input type="text" value={descricaoServico} onChange={(e) => setDescricaoServico(e.target.value)} className="w-full p-3 bg-neutral-950 border border-neutral-800 rounded-xl text-sm text-white" />
               </div>
-              <div className="md:col-span-2 space-y-4 border-t border-neutral-900 pt-4">
-                <h3 className="text-xs font-black uppercase text-neutral-400 tracking-wider">Imagem do Procedimento</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="bg-neutral-950 border border-neutral-800 rounded-xl p-4 flex flex-col justify-between">
-                    <input type="file" accept="image/*" onChange={handleUploadImagemServico} disabled={subindoImagem} className="text-xs text-neutral-400 file:bg-neutral-800 file:text-white cursor-pointer" />
-                  </div>
-                  <div className="bg-neutral-950 border border-neutral-800 rounded-xl p-4 flex flex-col justify-between">
-                    <input type="text" value={imagemUrlServico} onChange={(e) => setImagemUrlServico(e.target.value)} placeholder="https://..." className="w-full p-2 bg-neutral-900 border border-neutral-800 rounded-lg text-xs" />
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="border-t border-neutral-900 pt-6 space-y-4">
-              <div className="flex items-center gap-3">
-                <input type="checkbox" id="promocao-check" checked={emPromocao} onChange={(e) => setEmPromocao(e.target.checked)} className="w-4 h-4 rounded text-pink-500 bg-neutral-950 border-neutral-800" />
-                <label htmlFor="promocao-check" className="text-sm font-bold uppercase text-neutral-200">Ativar Campanha Promocional</label>
-              </div>
-              {emPromocao && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-xs font-bold uppercase text-neutral-400 mb-2">Preço Promocional (R$)</label>
-                    <input type="number" step="0.01" value={precoPromoServico} onChange={(e) => setPrecoPromoServico(e.target.value)} className="w-full p-3 bg-neutral-950 border border-neutral-800 rounded-xl text-sm focus:border-pink-500 text-pink-500" required={emPromocao} />
-                  </div>
-                </div>
-              )}
             </div>
             <div className="flex justify-between items-center border-t border-neutral-900 pt-6">
-              {idServicoEditando && <button type="button" onClick={resetarFormularioServico} className="text-xs font-bold text-neutral-500 hover:text-white cursor-pointer">Cancelar Edição</button>}
-              <button type="submit" className="px-6 py-3 bg-white text-black text-xs font-black uppercase rounded-xl ml-auto hover:bg-neutral-200 cursor-pointer">{idServicoEditando ? "Atualizar" : "Cadastrar"}</button>
+              {idServicoEditando && <button type="button" onClick={resetarFormularioServico} className="text-xs font-bold text-neutral-500 hover:text-white cursor-pointer">Cancelar</button>}
+              <button type="submit" className={`px-6 py-3 ${ehEstetica ? 'bg-white text-black' : 'bg-amber-500 text-neutral-950 font-black'} text-xs uppercase rounded-xl ml-auto cursor-pointer`}>{idServicoEditando ? "Atualizar" : "Publicar"}</button>
             </div>
           </form>
         </section>
 
-        {/* 4. GALERIA */}
+        {/* Módulo 4: Galeria */}
         <section className="bg-neutral-900/30 border border-neutral-900 rounded-2xl p-6 space-y-6">
-          <h2 className="text-lg font-black uppercase text-pink-500">4. Galeria de Fotos (Trabalhos Reais)</h2>
+          <h2 className={`text-lg font-black uppercase ${ehEstetica ? 'text-pink-500' : 'text-amber-500'}`}>{ehEstetica ? "4. Portfólio / Trabalhos Reais do Studio" : "4. Vitrine de Resultados / Evolução de Alunos"}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border-b border-neutral-900 pb-6">
             <div className="bg-neutral-950 border border-neutral-800 rounded-xl p-4">
-              <input type="file" accept="image/*" onChange={handleUploadGaleria} disabled={subindoGaleria} className="text-xs text-neutral-400 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:bg-neutral-800 file:text-white cursor-pointer" />
+              <input type="file" accept="image/*" onChange={handleUploadGaleria} disabled={subindoGaleria} className="text-xs text-neutral-400 cursor-pointer" />
             </div>
-            <form onSubmit={handleAdicionarFotoGaleriaLink} className="bg-neutral-950 border border-neutral-800 rounded-xl p-4 flex flex-col justify-between gap-2">
-              <div className="flex gap-2">
-                <input type="text" value={urlFotoNovaGaleria} onChange={(e) => setUrlFotoNovaGaleria(e.target.value)} placeholder="https://..." className="flex-1 p-2 bg-neutral-900 border border-neutral-800 rounded-lg text-xs text-white focus:outline-none" />
-                <button type="submit" className="px-4 py-2 bg-white text-black font-black text-xs uppercase rounded-lg hover:bg-neutral-200 cursor-pointer">Salvar</button>
-              </div>
+            <form onSubmit={handleAdicionarFotoGaleriaLink} className="bg-neutral-950 border border-neutral-800 rounded-xl p-4 flex gap-2">
+              <input type="text" value={urlFotoNovaGaleria} onChange={(e) => setUrlFotoNovaGaleria(e.target.value)} placeholder="URL da foto..." className="flex-1 p-2 bg-neutral-900 border border-neutral-800 rounded-lg text-xs text-white" />
+              <button type="submit" className="px-4 py-2 bg-white text-black font-black text-xs uppercase rounded-lg">Salvar</button>
             </form>
           </div>
-          <div className="space-y-3">
-            {fotosGaleria.length === 0 ? <p className="text-xs text-neutral-500 italic">Sua galeria está vazia.</p> : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                {fotosGaleria.map((foto) => (
-                  <div key={foto.id} className="relative flex flex-col border border-neutral-900 rounded-xl overflow-hidden bg-neutral-950 group">
-                    <div className="relative w-full aspect-square"><img src={foto.imagem_url} alt="" className="object-cover w-full h-full" /></div>
-                    <div className="p-2 bg-neutral-900 border-t border-neutral-800 flex justify-center items-center">
-                      <button type="button" onClick={() => handleDeletarFotoGaleria(foto.id)} className="w-full bg-red-600 text-white text-[10px] font-black uppercase py-1.5 rounded-lg cursor-pointer">Excluir Foto</button>
-                    </div>
-                  </div>
-                ))}
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+            {fotosGaleria.map((foto) => (
+              <div key={foto.id} className="relative flex flex-col border border-neutral-900 rounded-xl overflow-hidden bg-neutral-950">
+                <img src={foto.imagem_url} alt="" className="object-cover w-full aspect-square" />
+                <div className="p-2 bg-neutral-900 border-t border-neutral-800"><button type="button" onClick={() => handleDeletarFotoGaleria(foto.id)} className="w-full bg-red-600 text-white text-[10px] font-black uppercase py-1 rounded-lg">Remover</button></div>
               </div>
-            )}
+            ))}
           </div>
         </section>
 

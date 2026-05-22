@@ -71,7 +71,7 @@ export default function AppSection({ cliente }: AppSectionProps) {
         {/* Lado Esquerdo: Benefícios do App ou do Espaço */}
         <div className="flex-1 max-w-2xl">
           <h2 className="text-4xl md:text-5xl font-black tracking-tight leading-none text-neutral-950">
-            {ehEstetica ? "Sua experiência será em alto nível" : "Seu treino será entregue in alto nível"}
+            {ehEstetica ? "Sua experiência será em alto nível" : "Seu treino será entregue em alto nível"}
           </h2>
           <p className="mt-4 text-lg text-neutral-600 font-medium">
             {ehEstetica ? (
