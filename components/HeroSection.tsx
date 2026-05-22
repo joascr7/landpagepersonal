@@ -49,6 +49,7 @@ export default function HeroSection({ cliente }: HeroSectionProps) {
   return (
     <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-20 md:pt-40 md:pb-28 flex flex-col md:flex-row items-center justify-between gap-12 overflow-hidden z-20 bg-inherit text-inherit">
       
+      {/* Lado Esquerdo: Conteúdo */}
       <div className="flex-1 text-center md:text-left space-y-6 max-w-2xl">
         <div className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border text-[11px] font-bold uppercase tracking-wider ${estiloAtivo.badge}`}>
           <span className="w-1.5 h-1.5 rounded-full bg-current animate-ping"></span>
@@ -71,6 +72,7 @@ export default function HeroSection({ cliente }: HeroSectionProps) {
           )}
         </p>
 
+        {/* Botão de Ação e Prova Social */}
         <div className="pt-4 flex flex-col sm:flex-row items-center justify-center md:justify-start gap-6">
           <a
             href={ehEstetica ? "#agendamento" : "#precos"}
@@ -80,16 +82,22 @@ export default function HeroSection({ cliente }: HeroSectionProps) {
             {ehEstetica ? "Agendar Meu Horário" : "Quero Começar Agora"}
           </a>
 
-          {/* Prova Social sem avatares, mantendo apenas a avaliação */}
+          {/* Prova Social */}
           <div className="flex items-center gap-4 border-l border-current/10 pl-6 py-1">
             <div className="text-left space-y-0.5">
               <div className={`flex gap-0.5 ${estiloAtivo.estrelas}`}>★★★★★</div>
-              <p className="text-xs font-bold opacity-90 tracking-wide">{ehEstetica ? "+300 Unhas" : "+500 Vidas"}</p>
+              <p className="text-xs font-bold opacity-90 tracking-wide">
+                {ehEstetica ? "+300 Unhas Transformadas" : "+500 Vidas Transformadas"}
+              </p>
+              <p className="text-[10px] font-bold opacity-50 uppercase tracking-widest">
+                {ehEstetica ? "CLIENTES 100% SATISFEITAS" : "CLIENTES 100% SATISFEITOS"}
+              </p>
             </div>
           </div>
         </div>
       </div>
 
+      {/* Lado Direito: Imagem */}
       <div className="flex-1 w-full max-w-md aspect-[4/5] relative rounded-3xl overflow-hidden border border-current/10 bg-current/5 shadow-2xl flex items-center justify-center">
         {clienteValido.foto_hero ? (
           <img src={clienteValido.foto_hero} alt="Foto Hero" className="w-full h-full object-cover" />

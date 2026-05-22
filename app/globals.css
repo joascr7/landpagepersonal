@@ -5,3 +5,28 @@ select option {
   background-color: #171717; /* Isso resolve o problema de o fundo ficar branco no modo light */
   color: #ffffff;
 }
+
+/* 1. Reset: anula todas as cores padrão da biblioteca (remove o azul) */
+section .rdp {
+  --rdp-accent-color: transparent !important;
+}
+
+/* Ataca a raiz de qualquer elemento de seleção da biblioteca */
+section .rdp-day_selected, 
+section .rdp-day_selected:focus, 
+section .rdp-day_selected:hover {
+    background-color: var(--cor-tema) !important;
+    border: 2px solid var(--cor-tema) !important;
+    color: white !important;
+}
+
+/* Força a remoção de qualquer 'outline' (aquele círculo externo) azul */
+section .rdp-button:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+/* Garante que o ícone da seta também pegue a cor do tema */
+section .rdp-nav_button {
+    color: var(--cor-tema) !important;
+}

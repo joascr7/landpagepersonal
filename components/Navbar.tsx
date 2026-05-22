@@ -56,7 +56,7 @@ export default function Navbar({ cliente }: NavbarProps) {
                 <Link href={`/${slugAtivo}#services`} className="hover:opacity-100 transition-opacity">Serviços</Link>
               ) : (
                 <>
-                  <Link href={`/${slugAtivo}#como-funciona`} className="hover:opacity-100 transition-opacity">Como funciona?</Link>
+                  <Link href={`/${slugAtivo}#como-funciona`} className="hover:opacity-100 transition-opacity">Inicio</Link>
                   <Link href={`/${slugAtivo}#app`} className="hover:opacity-100 transition-opacity">Nosso App</Link>
                 </>
               )}
