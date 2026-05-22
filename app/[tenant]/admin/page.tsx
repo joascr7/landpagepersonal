@@ -219,7 +219,7 @@ export default function AdminPanel({ params }: AdminPanelProps) {
 
     setSalvandoCliente(false);
     if (error) alert("Erro ao salvar: " + error.message);
-    else alert("Dados do espaço e fotos updated!");
+    else alert("Dados do espaço e fotos atualizados com sucesso!");
   };
 
   // Upload de imagem de serviço e ações secundárias
@@ -458,7 +458,7 @@ export default function AdminPanel({ params }: AdminPanelProps) {
           </div>
         </section>
 
-        {/* 1. Dados do Espaço */}
+        {/* 1. Dados do Espaço e Imagens Gerais do Site */}
         <section className="bg-neutral-900/30 border border-neutral-900 rounded-2xl p-6">
           <h2 className="text-lg font-black uppercase text-pink-500 mb-6">1. Dados e Fotos do Espaço</h2>
           <form onSubmit={handleSalvarDadosCliente} className="space-y-8">
@@ -481,9 +481,14 @@ export default function AdminPanel({ params }: AdminPanelProps) {
                   <input type="file" accept="image/*" onChange={(e) => handleUploadFotoCliente(e, "hero")} className="text-xs text-neutral-400 file:bg-neutral-800 file:text-white cursor-pointer" />
                 </div>
                 <div className="bg-neutral-950 border border-neutral-800 rounded-xl p-4 flex flex-col justify-between">
-                  <input type="text" value={fotoHero} onChange={(e) => setFotoHero(e.target.value)} placeholder="https://..." className="w-full p-2.5 bg-neutral-900 border border-neutral-800 rounded-lg text-xs" />
+                  <input type="text" value={fotoHero} onChange={(e) => setFotoHero(e.target.value)} placeholder="https://..." className="w-full p-2.5 bg-neutral-900 border border-neutral-800 rounded-lg text-xs text-neutral-300 focus:outline-none focus:border-pink-500" />
                 </div>
               </div>
+              {fotoHero && (
+                <div className="mt-2 p-1.5 bg-neutral-900/60 rounded-lg border border-neutral-800 w-fit">
+                  <img src={fotoHero} alt="Preview Hero" className="w-20 h-12 rounded object-cover border border-neutral-700" />
+                </div>
+              )}
             </div>
 
             {/* SOBRE */}
@@ -494,39 +499,98 @@ export default function AdminPanel({ params }: AdminPanelProps) {
                   <input type="file" accept="image/*" onChange={(e) => handleUploadFotoCliente(e, "sobre")} className="text-xs text-neutral-400 file:bg-neutral-800 file:text-white cursor-pointer" />
                 </div>
                 <div className="bg-neutral-950 border border-neutral-800 rounded-xl p-4 flex flex-col justify-between">
-                  <input type="text" value={fotoSobre} onChange={(e) => setFotoSobre(e.target.value)} placeholder="https://..." className="w-full p-2.5 bg-neutral-900 border border-neutral-800 rounded-lg text-xs" />
+                  <input type="text" value={fotoSobre} onChange={(e) => setFotoSobre(e.target.value)} placeholder="https://..." className="w-full p-2.5 bg-neutral-900 border border-neutral-800 rounded-lg text-xs text-neutral-300 focus:outline-none focus:border-pink-500" />
                 </div>
               </div>
+              {fotoSobre && (
+                <div className="mt-2 p-1.5 bg-neutral-900/60 rounded-lg border border-neutral-800 w-fit">
+                  <img src={fotoSobre} alt="Preview Sobre" className="w-20 h-12 rounded object-cover border border-neutral-700" />
+                </div>
+              )}
             </div>
 
-            {/* OBJETIVOS */}
-            <div className="border-t border-neutral-900 pt-6 space-y-4">
-              <h3 className="text-sm font-black uppercase text-pink-500 tracking-wider">Fotos dos Cards Informativos (Seção Como vou te ajudar)</h3>
-              <div className="space-y-2 bg-neutral-950/40 p-4 rounded-xl border border-neutral-900">
-                <p className="text-xs font-bold text-neutral-300 uppercase">Card 1</p>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <input type="file" accept="image/*" onChange={(e) => handleUploadFotoObjetivo(e, 1)} className="text-xs text-neutral-400 p-2 border border-neutral-900 rounded-lg" />
-                  <input type="text" value={imgObjetivo1} onChange={(e) => setImgObjetivo1(e.target.value)} placeholder="Ou cole o link..." className="p-2 bg-neutral-950 border border-neutral-800 rounded-xl text-xs" />
-                </div>
+            {/* 🔥 SEÇÃO COMPLETA: CARDS INFORMATIVOS (COMO VOU TE AJUDAR) */}
+            <div className="border-t border-neutral-900 pt-6 space-y-6">
+              <div>
+                <h3 className="text-sm font-black uppercase text-pink-500 tracking-wider">Fotos dos Cards Informativos (Seção Como vou te ajudar)</h3>
+                <p className="text-neutral-500 text-xs mt-0.5 uppercase">Altere as imagens que aparecem nos 3 blocos informativos da página principal</p>
               </div>
-              <div className="space-y-2 bg-neutral-950/40 p-4 rounded-xl border border-neutral-900">
-                <p className="text-xs font-bold text-neutral-300 uppercase">Card 2</p>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <input type="file" accept="image/*" onChange={(e) => handleUploadFotoObjetivo(e, 2)} className="text-xs text-neutral-400 p-2 border border-neutral-900 rounded-lg" />
-                  <input type="text" value={imgObjetivo2} onChange={(e) => setImgObjetivo2(e.target.value)} placeholder="Ou cole o link..." className="p-2 bg-neutral-950 border border-neutral-800 rounded-xl text-xs" />
+
+              {/* CARD 1 */}
+              <div className="space-y-3 bg-neutral-950 p-4 rounded-xl border border-neutral-900">
+                <div className="flex justify-between items-center">
+                  <p className="text-xs font-black text-neutral-300 uppercase tracking-wide">Card 1: Alongamento em Gel / Emagrecimento</p>
+                  {imgObjetivo1 && <span className="text-[10px] bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded font-bold uppercase">Imagem Ativa ✓</span>}
                 </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="bg-neutral-900/40 p-3 rounded-lg border border-neutral-800 flex flex-col justify-center">
+                    <label className="block text-[11px] font-bold uppercase text-neutral-400 mb-2">Opção A: Upload de arquivo</label>
+                    <input type="file" accept="image/*" onChange={(e) => handleUploadFotoObjetivo(e, 1)} className="text-xs text-neutral-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:bg-neutral-800 file:text-white file:border-none cursor-pointer w-full" />
+                    {subindoObjetivo[1] && <span className="text-xs text-pink-500 animate-pulse mt-1.5 font-bold">Enviando arquivo...</span>}
+                  </div>
+                  <div className="bg-neutral-900/40 p-3 rounded-lg border border-neutral-800">
+                    <label className="block text-[11px] font-bold uppercase text-neutral-400 mb-2">Opção B: Link direto (URL)</label>
+                    <input type="text" value={imgObjetivo1} onChange={(e) => setImgObjetivo1(e.target.value)} placeholder="https://images.unsplash.com/..." className="w-full p-2.5 bg-neutral-950 border border-neutral-800 rounded-lg text-xs text-neutral-300 focus:outline-none focus:border-pink-500" />
+                  </div>
+                </div>
+                {imgObjetivo1 && (
+                  <div className="mt-2 p-1.5 bg-neutral-900/60 rounded-lg border border-neutral-800 w-fit">
+                    <img src={imgObjetivo1} alt="Preview Card 1" className="w-20 h-12 rounded object-cover border border-neutral-700" />
+                  </div>
+                )}
               </div>
-              <div className="space-y-2 bg-neutral-950/40 p-4 rounded-xl border border-neutral-900">
-                <p className="text-xs font-bold text-neutral-300 uppercase">Card 3</p>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <input type="file" accept="image/*" onChange={(e) => handleUploadFotoObjetivo(e, 3)} className="text-xs text-neutral-400 p-2 border border-neutral-900 rounded-lg" />
-                  <input type="text" value={imgObjetivo3} onChange={(e) => setImgObjetivo3(e.target.value)} placeholder="Ou cole o link..." className="p-2 bg-neutral-950 border border-neutral-800 rounded-xl text-xs" />
+
+              {/* CARD 2 */}
+              <div className="space-y-3 bg-neutral-950 p-4 rounded-xl border border-neutral-900">
+                <div className="flex justify-between items-center">
+                  <p className="text-xs font-black text-neutral-300 uppercase tracking-wide">Card 2: Manutenção Perfeita / Hipertrofia</p>
+                  {imgObjetivo2 && <span className="text-[10px] bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded font-bold uppercase">Imagem Ativa ✓</span>}
                 </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="bg-neutral-900/40 p-3 rounded-lg border border-neutral-800 flex flex-col justify-center">
+                    <label className="block text-[11px] font-bold uppercase text-neutral-400 mb-2">Opção A: Upload de arquivo</label>
+                    <input type="file" accept="image/*" onChange={(e) => handleUploadFotoObjetivo(e, 2)} className="text-xs text-neutral-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:bg-neutral-800 file:text-white file:border-none cursor-pointer w-full" />
+                    {subindoObjetivo[2] && <span className="text-xs text-pink-500 animate-pulse mt-1.5 font-bold">Enviando arquivo...</span>}
+                  </div>
+                  <div className="bg-neutral-900/40 p-3 rounded-lg border border-neutral-800">
+                    <label className="block text-[11px] font-bold uppercase text-neutral-400 mb-2">Opção B: Link direto (URL)</label>
+                    <input type="text" value={imgObjetivo2} onChange={(e) => setImgObjetivo2(e.target.value)} placeholder="https://images.unsplash.com/..." className="w-full p-2.5 bg-neutral-950 border border-neutral-800 rounded-lg text-xs text-neutral-300 focus:outline-none focus:border-pink-500" />
+                  </div>
+                </div>
+                {imgObjetivo2 && (
+                  <div className="mt-2 p-1.5 bg-neutral-900/60 rounded-lg border border-neutral-800 w-fit">
+                    <img src={imgObjetivo2} alt="Preview Card 2" className="w-20 h-12 rounded object-cover border border-neutral-700" />
+                  </div>
+                )}
+              </div>
+
+              {/* CARD 3 */}
+              <div className="space-y-3 bg-neutral-950 p-4 rounded-xl border border-neutral-900">
+                <div className="flex justify-between items-center">
+                  <p className="text-xs font-black text-neutral-300 uppercase tracking-wide">Card 3: Blindagem de Unhas / Definição Muscular</p>
+                  {imgObjetivo3 && <span className="text-[10px] bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded font-bold uppercase">Imagem Ativa ✓</span>}
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="bg-neutral-900/40 p-3 rounded-lg border border-neutral-800 flex flex-col justify-center">
+                    <label className="block text-[11px] font-bold uppercase text-neutral-400 mb-2">Opção A: Upload de arquivo</label>
+                    <input type="file" accept="image/*" onChange={(e) => handleUploadFotoObjetivo(e, 3)} className="text-xs text-neutral-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:bg-neutral-800 file:text-white file:border-none cursor-pointer w-full" />
+                    {subindoObjetivo[3] && <span className="text-xs text-pink-500 animate-pulse mt-1.5 font-bold">Enviando arquivo...</span>}
+                  </div>
+                  <div className="bg-neutral-900/40 p-3 rounded-lg border border-neutral-800">
+                    <label className="block text-[11px] font-bold uppercase text-neutral-400 mb-2">Opção B: Link direto (URL)</label>
+                    <input type="text" value={imgObjetivo3} onChange={(e) => setImgObjetivo3(e.target.value)} placeholder="https://images.unsplash.com/..." className="w-full p-2.5 bg-neutral-950 border border-neutral-800 rounded-lg text-xs text-neutral-300 focus:outline-none focus:border-pink-500" />
+                  </div>
+                </div>
+                {imgObjetivo3 && (
+                  <div className="mt-2 p-1.5 bg-neutral-900/60 rounded-lg border border-neutral-800 w-fit">
+                    <img src={imgObjetivo3} alt="Preview Card 3" className="w-20 h-12 rounded object-cover border border-neutral-700" />
+                  </div>
+                )}
               </div>
             </div>
 
             <div className="flex justify-end border-t border-neutral-900 pt-4">
-              <button type="submit" disabled={salvandoCliente} className="px-6 py-3 bg-pink-500 text-white text-xs font-black uppercase rounded-xl hover:bg-pink-400 transition-colors disabled:opacity-50">Salvar Alterações Globais</button>
+              <button type="submit" disabled={salvandoCliente} className="px-6 py-3 bg-pink-500 text-white text-xs font-black uppercase rounded-xl hover:bg-pink-400 transition-colors disabled:opacity-50 cursor-pointer">Salvar Alterações Globais</button>
             </div>
           </form>
         </section>
@@ -544,8 +608,7 @@ export default function AdminPanel({ params }: AdminPanelProps) {
                     <p className="text-xs text-neutral-400">R$ {s.preco}</p>
                   </div>
                 </div>
-                {/* 🔥 CORRIGIDO: Nome da propriedade do método ajustada para minúscula */}
-                <button onClick={() => iniciarEdicaoServico(s)} className="px-3 py-1.5 bg-neutral-800 hover:bg-neutral-700 rounded-lg text-xs font-bold">Editar</button>
+                <button onClick={() => iniciarEdicaoServico(s)} className="px-3 py-1.5 bg-neutral-800 hover:bg-neutral-700 rounded-lg text-xs font-bold cursor-pointer">Editar</button>
               </div>
             ))}
           </div>
@@ -595,8 +658,8 @@ export default function AdminPanel({ params }: AdminPanelProps) {
               )}
             </div>
             <div className="flex justify-between items-center border-t border-neutral-900 pt-6">
-              {idServicoEditando && <button type="button" onClick={resetarFormularioServico} className="text-xs font-bold text-neutral-500 hover:text-white">Cancelar Edição</button>}
-              <button type="submit" className="px-6 py-3 bg-white text-black text-xs font-black uppercase rounded-xl ml-auto hover:bg-neutral-200">{idServicoEditando ? "Atualizar" : "Cadastrar"}</button>
+              {idServicoEditando && <button type="button" onClick={resetarFormularioServico} className="text-xs font-bold text-neutral-500 hover:text-white cursor-pointer">Cancelar Edição</button>}
+              <button type="submit" className="px-6 py-3 bg-white text-black text-xs font-black uppercase rounded-xl ml-auto hover:bg-neutral-200 cursor-pointer">{idServicoEditando ? "Atualizar" : "Cadastrar"}</button>
             </div>
           </form>
         </section>
@@ -611,7 +674,7 @@ export default function AdminPanel({ params }: AdminPanelProps) {
             <form onSubmit={handleAdicionarFotoGaleriaLink} className="bg-neutral-950 border border-neutral-800 rounded-xl p-4 flex flex-col justify-between gap-2">
               <div className="flex gap-2">
                 <input type="text" value={urlFotoNovaGaleria} onChange={(e) => setUrlFotoNovaGaleria(e.target.value)} placeholder="https://..." className="flex-1 p-2 bg-neutral-900 border border-neutral-800 rounded-lg text-xs text-white focus:outline-none" />
-                <button type="submit" className="px-4 py-2 bg-white text-black font-black text-xs uppercase rounded-lg hover:bg-neutral-200">Salvar</button>
+                <button type="submit" className="px-4 py-2 bg-white text-black font-black text-xs uppercase rounded-lg hover:bg-neutral-200 cursor-pointer">Salvar</button>
               </div>
             </form>
           </div>
@@ -622,7 +685,7 @@ export default function AdminPanel({ params }: AdminPanelProps) {
                   <div key={foto.id} className="relative flex flex-col border border-neutral-900 rounded-xl overflow-hidden bg-neutral-950 group">
                     <div className="relative w-full aspect-square"><img src={foto.imagem_url} alt="" className="object-cover w-full h-full" /></div>
                     <div className="p-2 bg-neutral-900 border-t border-neutral-800 flex justify-center items-center">
-                      <button type="button" onClick={() => handleDeletarFotoGaleria(foto.id)} className="w-full bg-red-600 text-white text-[10px] font-black uppercase py-1.5 rounded-lg">Excluir Foto</button>
+                      <button type="button" onClick={() => handleDeletarFotoGaleria(foto.id)} className="w-full bg-red-600 text-white text-[10px] font-black uppercase py-1.5 rounded-lg cursor-pointer">Excluir Foto</button>
                     </div>
                   </div>
                 ))}
