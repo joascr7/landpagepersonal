@@ -65,7 +65,7 @@ export default function BookingSection({ cliente, servicos: servicosIniciais = [
       .in("status", ["pendente", "confirmado"]);
 
     const horasOcupadas = agendados?.map((a) => a.hora_agendamento) || [];
-    setHorariosLivres(horariosPermitidos.filter(h => !horasOcupadas.includes(h)));
+    setHorariosLivres(horariosPermitidos.filter((h: string) => !horasOcupadas.includes(h)));
     setCarregandoHoras(false);
   }, [clienteValido.id]);
 
