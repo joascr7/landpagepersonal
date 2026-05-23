@@ -49,14 +49,16 @@ export default function BookingSection({ cliente, servicos: servicosIniciais = [
 
     let horariosPermitidos = config?.horarios_disponiveis || ["08:00", "09:00", "10:00", "11:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00"];
 
-    if (isHoje) {
-      const horaAtual = agora.getHours();
-      const minutoAtual = agora.getMinutes();
-      horariosPermitidos = horariosPermitidos.filter(_ => {
-        const [hora, minuto] = _.split(":").map(Number);
-        return hora > horaAtual || (hora === horaAtual && minuto > minutoAtual);
-      });
-    }
+   if (isHoje) {
+  const horaAtual = agora.getHours();
+  const minutoAtual = agora.getMinutes();
+  
+  // Apenas adicione : string ao parâmetro para o TypeScript parar de reclamar
+  horariosPermitidos = horariosPermitidos.filter((horario: string) => {
+    const [hora, minuto] = horario.split(":").map(Number);
+    return hora > horaAtual || (hora === horaAtual && minuto > minutoAtual);
+  });
+}
 
     const { data: agendados } = await supabase.from("agendamentos")
       .select("hora_agendamento")
@@ -84,42 +86,38 @@ export default function BookingSection({ cliente, servicos: servicosIniciais = [
   };
 
 if (sucesso) {
-    // 1. Busca os dados do serviço selecionado para pegar o Nome e Preço
-    const servicoEscolhido = servicos.find(s => s.id === servicoSelecionado);
-    const nomeServico = servicoEscolhido?.nome || "Procedimento";
-    const valorServico = servicoEscolhido?.preco || "Consultar";
+  // Busca especificamente pelo campo que o seu Admin preenche
+  const numeroBruto = clienteValido.whatsapp_numero;
+  const numeroLimpo = numeroBruto?.toString().replace(/\D/g, "");
 
-    // 2. Busca o número do dono da página (usando o campo correto 'whatsapp_numero')
-    const numeroDono = clienteValido.whatsapp_numero || clienteValido.whatsapp || clienteValido.telefone;
-    const numeroLimpo = numeroDono?.toString().replace(/\D/g, "");
+  const mensagem = `Olá! Gostaria de confirmar meu agendamento. Cliente: ${nome}, Serviço: ${servicos.find(s => s.id === servicoSelecionado)?.nome || 'Procedimento'}`;
+  
+  // Se o número existir, gera o link, senão exibe um aviso amigável
+  const linkWhatsapp = numeroLimpo 
+    ? `https://wa.me/${numeroLimpo}?text=${encodeURIComponent(mensagem)}` 
+    : null;
 
-    // 3. Monta a mensagem personalizada com NOME, SERVIÇO e VALOR
-    const mensagem = `Olá! Gostaria de confirmar meu agendamento.
-    
-     Cliente: ${nome}
-     Data: ${format(dataSelecionada!, 'dd/MM')}
-     Horário: ${horaSelecionada}
-     Serviço: ${nomeServico}
-     Valor: R$ ${valorServico}`;
-
-    const linkWhatsapp = numeroLimpo 
-      ? `https://wa.me/${numeroLimpo}?text=${encodeURIComponent(mensagem)}` 
-      : null;
-
-    return (
-      <div className="text-center py-20 font-bold flex flex-col items-center gap-6">
-        <p className="text-xl">Solicitação Enviada com Sucesso!</p>
-        
-        {linkWhatsapp ? (
-          <a href={linkWhatsapp} target="_blank" rel="noopener noreferrer" className={`px-8 py-4 rounded-xl font-black uppercase text-white flex items-center gap-2 ${estiloAtivo.botao}`}>
-            Confirmar via WhatsApp
-          </a>
-        ) : (
-          <p className="text-sm text-red-500">Erro: WhatsApp do profissional não configurado.</p>
-        )}
-      </div>
-    );
-  }
+  return (
+    <div className="text-center py-20 font-bold flex flex-col items-center gap-6">
+      <p className="text-xl">Solicitação Enviada com Sucesso!</p>
+      
+      {linkWhatsapp ? (
+        <a 
+          href={linkWhatsapp} 
+          target="_blank" 
+          rel="noopener noreferrer" 
+          className={`px-8 py-4 rounded-xl font-black uppercase text-white flex items-center gap-2 ${estiloAtivo.botao}`}
+        >
+          Confirmar no WhatsApp
+        </a>
+      ) : (
+        <div className="p-4 bg-neutral-900 rounded-xl border border-neutral-800">
+           <p className="text-sm text-neutral-400">Aguarde a confirmação do profissional.</p>
+        </div>
+      )}
+    </div>
+  );
+}
 
   return (
     <section className="max-w-6xl mx-auto px-4 py-16 bg-inherit text-inherit rounded-3xl border border-current/10">
