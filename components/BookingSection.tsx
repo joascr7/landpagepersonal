@@ -5,7 +5,6 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { DayPicker } from "react-day-picker";
 import { supabase } from "@/lib/supabase";
-import "react-day-picker/dist/style.css";
 
 export default function BookingSection({ cliente, servicos: servicosIniciais = [] }: any) {
   const clienteValido = cliente || {};
@@ -34,14 +33,35 @@ export default function BookingSection({ cliente, servicos: servicosIniciais = [
 
   const atualizarHorariosLivres = useCallback(async (dataFoco: Date) => {
     if (!clienteValido.id) return;
+    
+    const agora = new Date();
+    const isHoje = format(dataFoco, "yyyy-MM-dd") === format(agora, "yyyy-MM-dd");
     const diaSemana = dataFoco.getDay();
     const dataFormatada = format(dataFoco, "yyyy-MM-dd");
-    const { data: config } = await supabase.from("configuracao_agenda").select("*").eq("cliente_id", clienteValido.id).eq("dia_semana", diaSemana).maybeSingle();
+
+    const { data: config } = await supabase.from("configuracao_agenda")
+      .select("*")
+      .eq("cliente_id", clienteValido.id)
+      .eq("dia_semana", diaSemana)
+      .maybeSingle();
     
     if (config?.esta_fechado) { setHorariosLivres([]); return; }
 
-    const horariosPermitidos = config?.horarios_disponiveis || ["08:00", "09:00", "10:00", "11:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00"];
-    const { data: agendados } = await supabase.from("agendamentos").select("hora_agendamento").eq("cliente_id", clienteValido.id).eq("data_agendamento", dataFormatada);
+    let horariosPermitidos = config?.horarios_disponiveis || ["08:00", "09:00", "10:00", "11:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00"];
+
+    if (isHoje) {
+      const horaAtual = agora.getHours();
+      const minutoAtual = agora.getMinutes();
+      horariosPermitidos = horariosPermitidos.filter(_ => {
+        const [hora, minuto] = _.split(":").map(Number);
+        return hora > horaAtual || (hora === horaAtual && minuto > minutoAtual);
+      });
+    }
+
+    const { data: agendados } = await supabase.from("agendamentos")
+      .select("hora_agendamento")
+      .eq("cliente_id", clienteValido.id)
+      .eq("data_agendamento", dataFormatada);
     
     const horasOcupadas = agendados?.map((a) => a.hora_agendamento) || [];
     setHorariosLivres(horariosPermitidos.filter((h: string) => !horasOcupadas.includes(h)));
@@ -53,7 +73,7 @@ export default function BookingSection({ cliente, servicos: servicosIniciais = [
 
   const handleSolicitarAgendamento = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!horaSelecionada || !servicoSelecionado || !nome || !whatsapp) return alert("Preencha tudo!");
+    if (!horaSelecionada || !servicoSelecionado || !nome || !whatsapp) return alert("Preencha todos os campos!");
     setCarregando(true);
     const { error } = await supabase.from("agendamentos").insert([{
       cliente_id: clienteValido.id, servico_id: servicoSelecionado, data_agendamento: format(dataSelecionada!, "yyyy-MM-dd"),
@@ -63,36 +83,71 @@ export default function BookingSection({ cliente, servicos: servicosIniciais = [
     setCarregando(false);
   };
 
-  if (sucesso) return <div className="text-center py-20 font-bold">Solicitação Enviada!</div>;
+if (sucesso) {
+    // 1. Busca os dados do serviço selecionado para pegar o Nome e Preço
+    const servicoEscolhido = servicos.find(s => s.id === servicoSelecionado);
+    const nomeServico = servicoEscolhido?.nome || "Procedimento";
+    const valorServico = servicoEscolhido?.preco || "Consultar";
+
+    // 2. Busca o número do dono da página (usando o campo correto 'whatsapp_numero')
+    const numeroDono = clienteValido.whatsapp_numero || clienteValido.whatsapp || clienteValido.telefone;
+    const numeroLimpo = numeroDono?.toString().replace(/\D/g, "");
+
+    // 3. Monta a mensagem personalizada com NOME, SERVIÇO e VALOR
+    const mensagem = `Olá! Gostaria de confirmar meu agendamento.
+    
+     Cliente: ${nome}
+     Data: ${format(dataSelecionada!, 'dd/MM')}
+     Horário: ${horaSelecionada}
+     Serviço: ${nomeServico}
+     Valor: R$ ${valorServico}`;
+
+    const linkWhatsapp = numeroLimpo 
+      ? `https://wa.me/${numeroLimpo}?text=${encodeURIComponent(mensagem)}` 
+      : null;
+
+    return (
+      <div className="text-center py-20 font-bold flex flex-col items-center gap-6">
+        <p className="text-xl">Solicitação Enviada com Sucesso!</p>
+        
+        {linkWhatsapp ? (
+          <a href={linkWhatsapp} target="_blank" rel="noopener noreferrer" className={`px-8 py-4 rounded-xl font-black uppercase text-white flex items-center gap-2 ${estiloAtivo.botao}`}>
+            Confirmar via WhatsApp
+          </a>
+        ) : (
+          <p className="text-sm text-red-500">Erro: WhatsApp do profissional não configurado.</p>
+        )}
+      </div>
+    );
+  }
 
   return (
     <section className="max-w-6xl mx-auto px-4 py-16 bg-inherit text-inherit rounded-3xl border border-current/10">
+      <style jsx global>{`
+        .rdp { display: flex; flex-direction: column; align-items: center; user-select: none; }
+        .rdp-table { display: grid !important; grid-template-columns: repeat(7, 40px) !important; gap: 4px !important; justify-content: center !important; }
+        .rdp-head_row, .rdp-row { display: contents !important; }
+        .rdp-head_cell, .rdp-cell { display: flex !important; justify-content: center !important; align-items: center !important; width: 40px !important; height: 40px !important; }
+        .rdp-day { width: 35px !important; height: 35px !important; border-radius: 50% !important; border: none !important; background: transparent !important; cursor: pointer; }
+        .rdp { --rdp-accent-color: ${estiloAtivo.hex} !important; }
+        .rdp-day_selected, .rdp-day_selected:hover { background-color: ${estiloAtivo.hex} !important; color: #000 !important; font-weight: 900 !important; outline: none !important; box-shadow: none !important; }
+        .rdp-day_selected::before { display: none !important; }
+        .rdp-nav_button { color: #333 !important; }
+      `}</style>
+
       <h2 className="text-center text-3xl font-black uppercase mb-12">Escolha seu Horário</h2>
       <form onSubmit={handleSolicitarAgendamento} className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-        
-        <div 
-          className="flex flex-col items-center bg-current/5 p-6 rounded-2xl border border-current/10"
-          style={{ "--rdp-accent-color": estiloAtivo.hex } as React.CSSProperties}
-        >
+        <div className="flex flex-col items-center bg-current/5 p-6 rounded-2xl border border-current/10">
           <DayPicker 
-  mode="single" 
-  selected={dataSelecionada} 
-  onSelect={setDataSelecionada} 
-  locale={ptBR}
-  /* Usamos modifiersStyles para garantir que o estilo de seleção 
-     seja aplicado via CSS da biblioteca, mas com a cor que injetamos 
-     na variável global --cor-tema */
-  modifiersStyles={{
-    selected: { 
-      backgroundColor: "var(--cor-tema)", 
-      color: "white" 
-    },
-    today: { 
-      color: "var(--cor-tema)", 
-      fontWeight: "bold" 
-    }
-  }}
-/>
+            mode="single" 
+            selected={dataSelecionada} 
+            onSelect={setDataSelecionada} 
+            locale={ptBR}
+            disabled={{ before: new Date() }}
+            modifiersStyles={{
+              selected: { backgroundColor: estiloAtivo.hex, color: "#000", fontWeight: "900", border: "2px solid #000", borderRadius: "8px" }
+            }}
+          />
           <div className="grid grid-cols-3 gap-2 mt-8 w-full">
             {horariosLivres.map((h) => (
               <button key={h} type="button" onClick={() => setHoraSelecionada(h)} className={`p-3 text-xs font-bold rounded-lg border ${horaSelecionada === h ? estiloAtivo.botao : "border-current/20"}`}>
@@ -106,17 +161,12 @@ export default function BookingSection({ cliente, servicos: servicosIniciais = [
           <div className="relative">
             <label className="text-xs font-black uppercase opacity-60 mb-2 block">Procedimento</label>
             <div onClick={() => setMenuAberto(!menuAberto)} className="w-full p-4 bg-inherit border border-current/10 rounded-xl cursor-pointer text-sm">
-              {servicos.find(s => s.id === servicoSelecionado)?.nome || "Selecione..."}
+              {servicos?.find(s => s.id === servicoSelecionado)?.nome || "Selecione..."}
             </div>
             {menuAberto && (
               <div className="absolute z-50 w-full mt-2 bg-white border border-current/20 rounded-xl overflow-hidden shadow-2xl text-neutral-900">
-                {servicos.map((s) => (
-                  <div 
-                    key={s.id} 
-                    onClick={() => { setServicoSelecionado(s.id); setMenuAberto(false); }} 
-                    className="p-4 text-sm hover:bg-neutral-100 cursor-pointer transition-colors" 
-                    style={{ backgroundColor: servicoSelecionado === s.id ? estiloAtivo.hex : '', color: servicoSelecionado === s.id ? 'white' : '' }}
-                  >
+                {servicos?.map((s) => (
+                  <div key={s.id} onClick={() => { setServicoSelecionado(s.id); setMenuAberto(false); }} className="p-4 text-sm hover:bg-neutral-100 cursor-pointer" style={{ backgroundColor: servicoSelecionado === s.id ? estiloAtivo.hex : '', color: servicoSelecionado === s.id ? 'white' : '' }}>
                     {s.nome}
                   </div>
                 ))}

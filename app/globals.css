@@ -6,27 +6,25 @@ select option {
   color: #ffffff;
 }
 
-/* 1. Reset: anula todas as cores padrão da biblioteca (remove o azul) */
-section .rdp {
-  --rdp-accent-color: transparent !important;
+/* Definição das variáveis de cor do calendário */
+.booking-calendar {
+  --cal-text-color: currentColor; /* Lê a cor do texto do pai */
+  --cal-bg-hover: rgba(128, 128, 128, 0.1);
 }
 
-/* Ataca a raiz de qualquer elemento de seleção da biblioteca */
-section .rdp-day_selected, 
-section .rdp-day_selected:focus, 
-section .rdp-day_selected:hover {
-    background-color: var(--cor-tema) !important;
-    border: 2px solid var(--cor-tema) !important;
-    color: white !important;
+.booking-calendar .rdp-day,
+.booking-calendar .rdp-caption_label,
+.booking-calendar .rdp-nav_button,
+.booking-calendar .rdp-head_cell {
+  color: var(--cal-text-color) !important;
 }
 
-/* Força a remoção de qualquer 'outline' (aquele círculo externo) azul */
-section .rdp-button:focus-visible {
-    outline: none !important;
-    box-shadow: none !important;
+.booking-calendar .rdp-day:hover:not(.rdp-day_selected) {
+  background-color: var(--cal-bg-hover) !important;
 }
 
-/* Garante que o ícone da seta também pegue a cor do tema */
-section .rdp-nav_button {
-    color: var(--cor-tema) !important;
+.booking-calendar .rdp-day_selected {
+  background-color: #f59e0b !important; /* Amber fixo para destaque */
+  color: #000000 !important;
+  font-weight: 800 !important;
 }
