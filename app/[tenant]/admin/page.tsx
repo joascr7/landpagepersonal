@@ -175,23 +175,32 @@ export default function AdminPanel({ params }: AdminPanelProps) {
     setHorariosDoDia(horariosDoDia.filter(h => h !== horaRemover));
   };
 
-  const handleSalvarConfigAgenda = async () => {
-    if (!clienteId) return;
-    setSalvandoAgenda(true);
+ const handleSalvarConfigAgenda = async () => {
+  if (!clienteId) return;
+  setSalvandoAgenda(true);
 
-    const { error } = await supabase
-      .from("configuracao_agenda")
-      .upsert({
-        cliente_id: clienteId,
-        dia_semana: diaSelecionadoConfig,
-        esta_fechado: estaFechado,
-        horarios_disponiveis: horariosDoDia
-      }, { onConflict: "cliente_id,dia_semana" });
+  const { error } = await supabase
+    .from("configuracao_agenda")
+    .upsert({
+      cliente_id: clienteId,
+      dia_semana: diaSelecionadoConfig,
+      esta_fechado: estaFechado,
+      horarios_disponiveis: horariosDoDia
+    }, { onConflict: "cliente_id,dia_semana" });
 
-    setSalvandoAgenda(false);
-    if (error) alert("Erro ao salvar agenda: " + error.message);
-    else alert(`Agenda de ${diasDaSemanaTexto[diaSelecionadoConfig]} atualizada com sucesso!`);
-  };
+  if (error) {
+    alert("Erro ao salvar agenda: " + error.message);
+  } else {
+    alert(`Agenda de ${diasDaSemanaTexto[diaSelecionadoConfig]} atualizada com sucesso!`);
+    
+    // 🔥 FORÇA A RECARGA DOS DADOS IMEDIATAMENTE
+    // Ao chamar esta função, o React irá buscar os dados atualizados 
+    // no banco e atualizar a tela sem necessidade de reload manual.
+    await carregarConfiguracaoDia(clienteId, diaSelecionadoConfig);
+  }
+  
+  setSalvandoAgenda(false);
+};
 
   const handleUploadFotoCliente = async (e: React.ChangeEvent<HTMLInputElement>, tipo: "hero" | "sobre") => {
     const file = e.target.files?.[0];
