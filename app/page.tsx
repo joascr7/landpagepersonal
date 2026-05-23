@@ -1,121 +1,97 @@
 import Link from "next/link";
 
-export default function LandingPagePrincipal() {
+export default function UsoPrimeLanding() {
   return (
-    <main className="bg-neutral-950 text-white min-h-screen font-sans selection:bg-amber-500 selection:text-neutral-950 overflow-x-hidden scroll-smooth">
+    <main className="bg-[#020202] text-neutral-300 min-h-screen font-sans selection:bg-amber-500/20 selection:text-white overflow-x-hidden">
       
       {/* NAVBAR */}
-      <nav className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-        <div className="text-xl font-bold tracking-tight">Landpage<span className="text-amber-500">Pro</span></div>
-        <div className="hidden md:flex gap-8 text-sm text-neutral-400">
+      <nav className="fixed top-6 left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-full border border-white/5 bg-white/[0.02] backdrop-blur-2xl">
+        <div className="flex items-center gap-8 text-[10px] font-bold uppercase tracking-[0.2em] text-neutral-400">
+          <div className="text-sm font-bold text-white tracking-tighter mr-4">
+            USO<span className="text-amber-500">PRIME</span>
+          </div>
           <Link href="#inicio" className="hover:text-white transition">Início</Link>
-          <Link href="#planos" className="hover:text-white transition">Planos</Link>
+          <Link href="#planos" className="hover:text-white transition">Assinatura</Link>
+          <Link href="/joasvieira" className="text-white hover:text-amber-500 transition">Demo</Link>
         </div>
-        <Link href="#planos" className="bg-amber-500 hover:bg-amber-600 text-neutral-950 px-6 py-2 rounded-full text-sm font-bold transition-all">
-          Criar Meu Site
-        </Link>
       </nav>
 
-      {/* HERO SECTION */}
-      <section id="inicio" className="pt-20 pb-10 max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-16 items-center">
-        <div className="space-y-6">
-          <span className="text-amber-500 text-[10px] font-bold uppercase tracking-[0.2em] bg-amber-500/10 px-3 py-1 rounded-full">Para Personal Trainers e Estúdios</span>
-          <h1 className="text-5xl md:text-7xl font-black leading-[0.95] tracking-tight text-white">
-            Tenha seu site profissional <br />
-            <span className="text-amber-500">em menos de 5 minutos</span>
-          </h1>
-          <p className="text-neutral-400 text-lg max-w-lg">Gerencie serviços, fotos e contatos em um painel administrativo exclusivo. Tudo integrado e pronto para converter leads em clientes.</p>
-          <Link href="#planos" className="bg-amber-500 hover:bg-amber-600 text-neutral-950 font-black px-10 py-5 rounded-2xl inline-block transition-all text-lg shadow-[0_0_30px_rgba(245,158,11,0.3)]">
-            Começar Agora
-          </Link>
-        </div>
-        
-        {/* MOCKUP COM AURA (Sem borda, apenas efeito de brilho) */}
-        <div className="relative flex justify-center items-center">
-          {/* Efeito de Aura (Glow) atrás da imagem */}
-          <div className="absolute w-[300px] h-[300px] bg-amber-500/20 rounded-full blur-[100px] z-0"></div>
-          
-          {/* Imagem do Celular sem borda */}
-          <div className="relative z-10 w-full max-w-[320px]">
-             <img src="/mockup.png" alt="LandpagePro Mockup" className="w-full drop-shadow-2xl" />
+      {/* HERO */}
+      <section id="inicio" className="pt-64 pb-32 px-8 text-center">
+        <div className="max-w-5xl mx-auto">
+          <div className="mb-8 inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/5 bg-white/5 text-[9px] font-medium uppercase tracking-[0.25em] text-neutral-500">
+            Sistemas operacionais para negócios
           </div>
+          <h1 className="text-[5rem] md:text-[11rem] font-medium tracking-tighter text-white leading-[0.8] mb-12">
+            USO.<span className="text-neutral-700">PRIME</span>
+          </h1>
+          <p className="text-xl md:text-2xl font-light text-neutral-500 max-w-2xl mx-auto mb-16 leading-relaxed">
+            A infraestrutura digital de elite para quem exige precisão. 
+            Agendamentos automatizados e gestão de alta conversão.
+          </p>
+          <Link href="#planos" className="px-12 py-6 bg-white text-black font-semibold rounded-full hover:bg-amber-500 transition-all duration-500 text-sm uppercase tracking-widest">
+            Iniciar projeto
+          </Link>
         </div>
       </section>
 
-      {/* PROVA SOCIAL */}
-      <section className="max-w-7xl mx-auto px-6 py-16 grid grid-cols-2 md:grid-cols-4 gap-12 border-t border-neutral-900/50">
-        {[
-          { val: "+120", label: "SITES ENTREGUES" },
-          { val: "+80", label: "CLIENTES ATIVOS" },
-          { val: "99,9%", label: "UPTIME GARANTIDO" },
-          { val: "7 DIAS", label: "SUPORTE VIP" },
-        ].map((item, i) => (
-          <div key={i} className="text-center">
-            <p className="text-3xl font-black text-white">{item.val}</p>
-            <p className="text-[10px] font-bold text-neutral-500 tracking-[0.2em] mt-2">{item.label}</p>
-          </div>
+      {/* GRID DE NICHO (Bento Grid) */}
+      <section className="max-w-7xl mx-auto px-8 py-32 grid md:grid-cols-4 gap-px bg-white/5 border border-white/5 rounded-[3rem] overflow-hidden">
+        {["Barbearia", "Cílios", "Consultoria", "Estética"].map((nicho) => (
+            <div key={nicho} className="bg-[#020202] p-12 hover:bg-white/[0.02] transition-colors cursor-default">
+                <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-neutral-600 mb-4">Setor</div>
+                <div className="text-2xl font-medium text-white">{nicho}</div>
+            </div>
         ))}
       </section>
 
-      {/* 4. PLANOS */}
-      <section id="planos" className="py-24 bg-neutral-950">
-        <div className="max-w-7xl mx-auto px-4 text-center">
-          <h2 className="text-4xl md:text-6xl font-black text-white">Escolha o seu <span className="text-amber-500">nível de crescimento</span></h2>
-          <div className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
-            
-            {/* PLANO STARTER */}
-            <div className="bg-neutral-900/20 border border-neutral-800 rounded-3xl p-8 text-left hover:border-neutral-700 transition-all">
-              <h3 className="text-lg font-bold text-neutral-300">Starter</h3>
-              <div className="flex items-baseline gap-1 my-8">
-                <span className="text-4xl font-black text-white">R$ 29,90</span>
-                <span className="text-neutral-500 text-sm">/mês</span>
-              </div>
-              <ul className="space-y-4 text-neutral-400 border-t border-neutral-800 pt-6">
-                <li>✓ Site 100% editável</li>
-                <li>✓ Painel administrativo</li>
-                <li>✓ Botão WhatsApp</li>
-              </ul>
-              <a href="https://pay.kiwify.com.br/biQ4H52" className="block w-full bg-neutral-800 hover:bg-neutral-700 text-white font-bold text-center py-4 rounded-xl mt-10">Escolher Starter</a>
-            </div>
-
-            {/* PLANO PRO (DESTAQUE) */}
-            <div className="relative bg-neutral-900 border border-amber-500/30 rounded-3xl p-8 text-left shadow-2xl shadow-amber-500/10 scale-105 z-10">
-              <div className="absolute -top-3 right-8 bg-amber-500 text-neutral-950 font-black text-[10px] px-4 py-1 rounded-full uppercase tracking-widest shadow-lg">Mais Vendido</div>
-              <h3 className="text-lg font-bold text-white">Pro Evolution</h3>
-              <div className="flex items-baseline gap-1 my-8">
-                <span className="text-4xl font-black text-white">R$ 59,90</span>
-                <span className="text-neutral-400 text-sm">/mês</span>
-              </div>
-              <ul className="space-y-4 text-white border-t border-amber-500/20 pt-6">
-                <li className="font-bold text-amber-500">★ Tudo do Starter +</li>
-                <li>★ Suporte VIP no WhatsApp</li>
-                <li>★ Domínio personalizado</li>
-              </ul>
-              <a href="https://pay.kiwify.com.br/biQ4H52" className="block w-full bg-amber-500 hover:bg-amber-400 text-neutral-950 font-black text-center py-4 rounded-xl mt-10 shadow-lg shadow-amber-500/20">Quero o Pro</a>
-            </div>
-
-            {/* PLANO AGÊNCIA */}
-            <div className="bg-neutral-900/20 border border-neutral-800 rounded-3xl p-8 text-left hover:border-neutral-700 transition-all">
-              <h3 className="text-lg font-bold text-neutral-300">Agência Full</h3>
-              <div className="flex items-baseline gap-1 my-8">
-                <span className="text-4xl font-black text-white">R$ 149,90</span>
-                <span className="text-neutral-500 text-sm">/mês</span>
-              </div>
-              <ul className="space-y-4 text-neutral-400 border-t border-neutral-800 pt-6">
-                <li>✓ Tudo do Pro Evolution</li>
-                <li>✓ Setup de Anúncios</li>
-                <li>✓ Relatórios Mensais</li>
-              </ul>
-              <a href="https://pay.kiwify.com.br/biQ4H52" className="block w-full bg-neutral-800 hover:bg-neutral-700 text-white font-bold text-center py-4 rounded-xl mt-10">Consultoria Agência</a>
-            </div>
-
+     {/* PRICE TIER (Black Card Atualizado) */}
+<section id="planos" className="py-32 px-8">
+  <div className="max-w-xl mx-auto">
+    <div className="relative group p-px bg-gradient-to-b from-white/10 to-transparent rounded-[2rem]">
+      <div className="bg-[#020202] rounded-[2rem] p-16">
+        <div className="flex justify-between items-start mb-12">
+          <div>
+            <h3 className="text-4xl font-medium text-white tracking-tighter">Pro Elite</h3>
+            {/* Texto claro sobre a natureza da cobrança */}
+            <p className="text-[10px] uppercase tracking-[0.2em] text-amber-500 mt-2">Assinatura mensal </p>
+          </div>
+          <div className="text-right">
+            <div className="text-5xl font-bold text-white tracking-tighter">R$ 29,90</div>
+            {/* Reforço de que é mensal */}
+            <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-neutral-600 mt-1">Cobrado todo mês</div>
           </div>
         </div>
-      </section>
+        
+        <div className="space-y-6 mb-16 border-t border-white/5 pt-12">
+          {["Painel Administrativo", "Agendamento Inteligente", "Setup sob medida", "Otimização de Conversão"].map(f => (
+            <div key={f} className="flex items-center gap-4 text-neutral-400 text-sm">
+              <span className="w-1 h-1 bg-amber-500 rounded-full"></span>
+              {f}
+            </div>
+          ))}
+        </div>
 
-      {/* 5. FOOTER */}
-      <footer className="border-t border-neutral-900 py-8 text-center text-sm text-neutral-500">
-        &copy; {new Date().getFullYear()} LandpagePro. Todos os direitos reservados.
+        {/* Botão com reforço de assinatura */}
+        <Link 
+          href="https://pay.kiwify.com.br/biQ4H52" 
+          className="block w-full py-6 text-center border border-white/10 hover:bg-white hover:text-black font-bold uppercase tracking-widest text-xs rounded-full transition-all duration-300"
+        >
+          Assinar por R$ 29,90/mês
+        </Link>
+        
+        {/* Nota de rodapé de transparência */}
+        <p className="text-center text-[9px] text-neutral-700 mt-6 uppercase tracking-widest">
+          Cancele quando quiser. Acesso renovado mensalmente.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+      {/* FOOTER */}
+      <footer className="py-16 border-t border-white/5 text-center text-[9px] text-neutral-700 uppercase tracking-[0.3em]">
+        &copy; {new Date().getFullYear()} UsoPrime — Elite Digital Solutions
       </footer>
     </main>
   );
