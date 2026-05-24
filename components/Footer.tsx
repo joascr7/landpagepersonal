@@ -56,10 +56,16 @@ export default function Footer({ cliente }: FooterProps) {
 
           <div>
             <h3 className="font-bold text-lg mb-4">Links úteis</h3>
-            <ul className="space-y-2 text-sm font-medium opacity-70">
-              <li><Link href={`/${clienteValido.slug || ""}#como-funciona`} className="hover:opacity-100 transition-opacity">{ehEstetica ? "Pacotes e Serviços" : "Consultoria"}</Link></li>
-              <li><Link href={`/${clienteValido.slug || ""}/loja`} className="hover:opacity-100 transition-opacity">Acessar Loja Virtual</Link></li>
-            </ul>
+            {/* O menu só aparece se NÃO for estética */}
+{!ehEstetica && (
+  <ul className="space-y-2 text-sm font-medium opacity-70">
+    <li>
+      <Link href={`/${clienteValido.slug || ""}#como-funciona`} className="hover:opacity-100 transition-opacity">
+        Consultoria
+      </Link>
+    </li>
+  </ul>
+)}
           </div>
 
           <div className="space-y-6">

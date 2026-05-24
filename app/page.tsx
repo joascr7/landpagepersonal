@@ -12,7 +12,7 @@ export default function UsoPrimeLanding() {
           </div>
           <Link href="#inicio" className="hover:text-white transition">Início</Link>
           <Link href="#planos" className="hover:text-white transition">Assinatura</Link>
-          <Link href="/joasvieira" className="text-white hover:text-amber-500 transition">Demo</Link>
+          <Link href="/demo" className="text-white hover:text-amber-500 transition">Demo</Link>
         </div>
       </nav>
 

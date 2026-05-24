@@ -62,6 +62,7 @@ export default function AdminPanel({ params }: AdminPanelProps) {
   const [fotosGaleria, setFotosGaleria] = useState<any[]>([]);
   const [urlFotoNovaGaleria, setUrlFotoNovaGaleria] = useState("");
   const [agendamentos, setAgendamentos] = useState<any[]>([]);
+  const [abaAgendamento, setAbaAgendamento] = useState<'pendente' | 'concluido' | 'cancelado'>('pendente');
 
   const ehEstetica = nichoCliente === "estetica";
 
@@ -115,6 +116,31 @@ export default function AdminPanel({ params }: AdminPanelProps) {
     }
     carregarDados();
   }, [tenant]);
+
+
+  // Substitua o useEffect do Realtime por este:
+useEffect(() => {
+  if (!clienteId) return;
+
+  const channel = supabase
+    .channel('public:agendamentos') // Nome padrão sugerido
+    .on('postgres_changes', { 
+      event: '*', 
+      schema: 'public', 
+      table: 'agendamentos',
+      filter: `cliente_id=eq.${clienteId}` 
+    }, (payload) => {
+      console.log('Evento recebido:', payload); // VEJA ISSO NO CONSOLE DO NAVEGADOR
+      
+      if (payload.eventType === 'INSERT') {
+        setAgendamentos(prev => [payload.new, ...prev]);
+      }
+      // ... restante dos ifs
+    })
+    .subscribe();
+
+  return () => { supabase.removeChannel(channel); };
+}, [clienteId]);
 
   // VERIFICA O PIN DIGITADO
   const handleVerificarCodigoAcesso = (e: React.FormEvent) => {
@@ -308,6 +334,18 @@ export default function AdminPanel({ params }: AdminPanelProps) {
     } catch (error: any) { alert(error.message); } finally { setSubindoGaleria(false); }
   };
 
+
+ const handleAtualizarStatus = async (id: string, novoStatus: 'pendente' | 'concluido' | 'cancelado') => {
+  const { error } = await supabase.from("agendamentos").update({ status: novoStatus }).eq("id", id);
+  
+  if (!error) {
+    // Atualiza o estado localmente sem dar F5
+    setAgendamentos(prev => prev.map(a => a.id === id ? { ...a, status: novoStatus } : a));
+  } else {
+    alert("Erro ao atualizar status");
+  }
+};
+
   const handleAdicionarFotoGaleriaLink = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!urlFotoNovaGaleria) return;
@@ -445,46 +483,91 @@ export default function AdminPanel({ params }: AdminPanelProps) {
           </div>
         </div>
 
-        {/* SEÇÃO CONDICIONAL: SÓ EXPÕE AGENDAMENTOS SE FOR NICHO ESTÉTICA */}
-        {ehEstetica && (
-          <section className="bg-neutral-900/20 border border-neutral-900 rounded-2xl p-6 space-y-4">
-            <h2 className="text-lg font-black uppercase text-pink-500">🗓️ Próximos Agendamentos ({agendamentos.length})</h2>
-            {agendamentos.length === 0 ? (
-              <p className="text-xs text-neutral-500 italic py-2">Nenhum horário agendado ainda.</p>
-            ) : (
-              <div className="space-y-3">
-                {agendamentos.map((agend) => (
-                  <div key={agend.id} className="bg-neutral-950 border border-neutral-900 rounded-xl p-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hover:border-neutral-800 transition-colors">
-                    <div className="space-y-1">
-                      <div className="flex flex-wrap items-center gap-3">
-                        <h3 className="font-bold text-sm text-white uppercase">{agend.nome_cliente}</h3>
-                        <span className="bg-neutral-900 border border-neutral-800 text-neutral-400 font-mono text-[11px] px-2 py-0.5 rounded-md">
-                          {agend.data_agendamento?.split("-").reverse().join("/")} às {agend.hora_agendamento}
-                        </span>
-                      </div>
-                      <p className="text-xs text-neutral-400">Procedimento: <span className="text-pink-500 font-semibold">{agend.servico_nome}</span></p>
-                      <p className="text-[11px] text-neutral-500 font-mono">Contato: {agend.whatsapp_cliente}</p>
-                    </div>
-                    <div className="flex items-center gap-3 w-full md:w-auto">
-                      <button 
-                        onClick={() => enviarConfirmacaoWhatsApp(agend)} 
-                        className="flex-1 md:flex-initial px-4 py-2 bg-green-600 hover:bg-green-500 transition-colors text-white font-black text-xs uppercase rounded-lg cursor-pointer text-center"
-                      >
-                        Confirmar no Whats 💬
-                    </button>
-                      <button 
-                        onClick={() => handleDeletarAgendamento(agend.id)} 
-                        className="p-2 bg-neutral-900 border border-neutral-800 text-neutral-400 hover:text-red-500 rounded-lg text-xs cursor-pointer transition-colors"
-                      >
-                        🗑️
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
+        {/* SEÇÃO DE AGENDAMENTOS COM ABAS E STATUS */}
+<section className="bg-neutral-900/30 border border-neutral-900 rounded-2xl p-6 space-y-6">
+  <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+    <h2 className="text-lg font-black uppercase text-pink-500">
+      🗓️ Gestão de Agendamentos
+    </h2>
+    
+    {/* Abas com Contadores */}
+    <div className="flex bg-neutral-950 p-1 rounded-xl border border-neutral-900 w-fit">
+      {(['pendente', 'concluido', 'cancelado'] as const).map((s) => (
+        <button 
+          key={s} 
+          onClick={() => setAbaAgendamento(s)}
+          className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase transition-all flex items-center gap-2 ${
+            abaAgendamento === s 
+              ? 'bg-pink-500 text-white shadow-lg shadow-pink-500/20' 
+              : 'text-neutral-500 hover:text-white'
+          }`}
+        >
+          {s}
+          <span className="bg-black/20 px-1.5 py-0.5 rounded-md text-[9px]">
+            {agendamentos.filter(a => a.status === s).length}
+          </span>
+        </button>
+      ))}
+    </div>
+  </div>
+
+  {/* Lista Filtrada */}
+  <div className="space-y-3">
+    {agendamentos.filter(a => a.status === abaAgendamento).length === 0 ? (
+      <div className="text-center py-10 border-2 border-dashed border-neutral-800 rounded-xl">
+        <p className="text-xs text-neutral-500 italic">Nenhum agendamento com status "{abaAgendamento}"</p>
+      </div>
+    ) : (
+      agendamentos.filter(a => a.status === abaAgendamento).map((agend) => (
+        <div key={agend.id} className="bg-neutral-950 border border-neutral-900 rounded-xl p-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hover:border-neutral-800 transition-colors">
+          <div className="space-y-1">
+            <div className="flex flex-wrap items-center gap-3">
+              <h3 className="font-bold text-sm text-white uppercase">{agend.nome_cliente}</h3>
+              <span className="bg-neutral-900 border border-neutral-800 text-neutral-400 font-mono text-[11px] px-2 py-0.5 rounded-md">
+                {agend.data_agendamento?.split("-").reverse().join("/")} às {agend.hora_agendamento}
+              </span>
+            </div>
+            <p className="text-xs text-neutral-400">Procedimento: <span className="text-pink-500 font-semibold">{agend.servico_nome}</span></p>
+            <p className="text-[11px] text-neutral-500 font-mono">Contato: {agend.whatsapp_cliente}</p>
+          </div>
+          
+          <div className="flex items-center gap-2 w-full md:w-auto">
+            {abaAgendamento === 'pendente' && (
+              <>
+                <button 
+                  onClick={() => handleAtualizarStatus(agend.id, 'concluido')} 
+                  className="px-3 py-1.5 bg-green-900/20 text-green-400 border border-green-900/50 rounded-lg text-[10px] font-bold uppercase hover:bg-green-600 hover:text-white transition-all cursor-pointer"
+                >
+                  Concluir
+                </button>
+                <button 
+                  onClick={() => handleAtualizarStatus(agend.id, 'cancelado')} 
+                  className="px-3 py-1.5 bg-red-900/20 text-red-400 border border-red-900/50 rounded-lg text-[10px] font-bold uppercase hover:bg-red-600 hover:text-white transition-all cursor-pointer"
+                >
+                  Cancelar
+                </button>
+              </>
             )}
-          </section>
-        )}
+            <button 
+              onClick={() => enviarConfirmacaoWhatsApp(agend)} 
+              className="p-2 bg-neutral-800 text-white rounded-lg text-[10px] hover:bg-green-600 transition-colors"
+              title="Confirmar no WhatsApp"
+            >
+              💬
+            </button>
+            <button 
+              onClick={() => handleDeletarAgendamento(agend.id)} 
+              className="p-2 bg-neutral-800 text-neutral-400 hover:text-red-500 rounded-lg text-[10px] transition-colors"
+            >
+              🗑️
+            </button>
+          </div>
+        </div>
+      ))
+    )}
+  </div>
+</section>
+        
 
         {/* CONFIGURAÇÃO DA AGENDA: SÓ SE FOR ESTÉTICA */}
         {ehEstetica && (
@@ -674,32 +757,76 @@ export default function AdminPanel({ params }: AdminPanelProps) {
           </div>
         </section>
 
-        {/* Módulo 3: Formulário de Adição */}
-        <section id="formulario-servico" className="bg-neutral-900/30 border border-neutral-900 rounded-2xl p-6 scroll-mt-6">
-          <h2 className={`text-lg font-black uppercase ${ehEstetica ? 'text-pink-500' : 'text-amber-500'} mb-4`}>
-            {idServicoEditando ? "⚡ Editando Item" : ehEstetica ? "➕ Cadastrar Novo Procedimento" : "➕ Adicionar Novo Plano de Treino"}
-          </h2>
-          <form onSubmit={handleSalvarServico} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-xs font-bold uppercase text-neutral-400 mb-2">{ehEstetica ? "Nome do Serviço" : "Título do Plano (Ex: Trimestral Premium)"}</label>
-                <input type="text" value={nomeServico} onChange={(e) => setNomeServico(e.target.value)} className="w-full p-3 bg-neutral-950 border border-neutral-800 rounded-xl text-sm text-white" required />
-              </div>
-              <div>
-                <label className="block text-xs font-bold uppercase text-neutral-400 mb-2">Valor Cobrado (R$)</label>
-                <input type="number" step="0.01" value={precoServico} onChange={(e) => setPrecoServico(e.target.value)} className="w-full p-3 bg-neutral-950 border border-neutral-800 rounded-xl text-sm text-white" required />
-              </div>
-              <div className="md:col-span-2">
-                <label className="block text-xs font-bold uppercase text-neutral-400 mb-2">O que está incluso (Breve descrição)</label>
-                <input type="text" value={descricaoServico} onChange={(e) => setDescricaoServico(e.target.value)} className="w-full p-3 bg-neutral-950 border border-neutral-800 rounded-xl text-sm text-white" />
-              </div>
-            </div>
-            <div className="flex justify-between items-center border-t border-neutral-900 pt-6">
-              {idServicoEditando && <button type="button" onClick={resetarFormularioServico} className="text-xs font-bold text-neutral-500 hover:text-white cursor-pointer">Cancelar</button>}
-              <button type="submit" className={`px-6 py-3 ${ehEstetica ? 'bg-white text-black' : 'bg-amber-500 text-neutral-950 font-black'} text-xs uppercase rounded-xl ml-auto cursor-pointer`}>{idServicoEditando ? "Atualizar" : "Publicar"}</button>
-            </div>
-          </form>
-        </section>
+        {/* Módulo 3: Formulário de Adição com Imagem e Promoção */}
+<section id="formulario-servico" className="bg-neutral-900/30 border border-neutral-900 rounded-2xl p-6 scroll-mt-6">
+  <h2 className="text-lg font-black uppercase text-pink-500 mb-4">
+    {idServicoEditando ? "⚡ Editando Item" : "3. Cadastrar Novo Procedimento"}
+  </h2>
+  
+  <form onSubmit={handleSalvarServico} className="space-y-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div>
+        <label className="block text-xs font-bold uppercase text-neutral-400 mb-2">Nome do Serviço</label>
+        <input type="text" value={nomeServico} onChange={(e) => setNomeServico(e.target.value)} className="w-full p-3 bg-neutral-950 border border-neutral-800 rounded-xl text-sm text-white" required />
+      </div>
+      
+      <div>
+        <label className="block text-xs font-bold uppercase text-neutral-400 mb-2">Valor Cobrado (R$)</label>
+        <input type="number" step="0.01" value={precoServico} onChange={(e) => setPrecoServico(e.target.value)} className="w-full p-3 bg-neutral-950 border border-neutral-800 rounded-xl text-sm text-white" required />
+      </div>
+
+      {/* NOVO CAMPO: PROMOÇÃO */}
+      <div className="md:col-span-2 bg-neutral-950/50 p-4 rounded-xl border border-neutral-800/50">
+        <label className="flex items-center gap-3 cursor-pointer">
+          <input 
+            type="checkbox" 
+            checked={emPromocao} 
+            onChange={(e) => setEmPromocao(e.target.checked)} 
+            className="w-4 h-4 accent-pink-500" 
+          />
+          <span className="text-xs font-bold uppercase text-neutral-300">Ativar preço promocional</span>
+        </label>
+        
+        {emPromocao && (
+          <div className="mt-4">
+            <label className="block text-xs font-bold uppercase text-pink-500 mb-2">Novo Preço (Promoção)</label>
+            <input 
+              type="number" 
+              step="0.01" 
+              value={precoPromoServico} 
+              onChange={(e) => setPrecoPromoServico(e.target.value)} 
+              placeholder="Ex: 99.90" 
+              className="w-full p-3 bg-neutral-900 border border-pink-500/30 rounded-xl text-sm text-white" 
+            />
+          </div>
+        )}
+      </div>
+
+      <div className="md:col-span-2">
+        <label className="block text-xs font-bold uppercase text-neutral-400 mb-2">URL da Imagem</label>
+        <div className="flex gap-4">
+          <input type="text" value={imagemUrlServico} onChange={(e) => setImagemUrlServico(e.target.value)} placeholder="Cole o link da imagem..." className="flex-1 p-3 bg-neutral-950 border border-neutral-800 rounded-xl text-sm text-white" />
+          <label className="cursor-pointer bg-neutral-800 hover:bg-neutral-700 px-4 py-3 rounded-xl text-xs font-bold flex items-center">
+            Upload
+            <input type="file" accept="image/*" onChange={handleUploadImagemServico} className="hidden" />
+          </label>
+        </div>
+      </div>
+
+      <div className="md:col-span-2">
+        <label className="block text-xs font-bold uppercase text-neutral-400 mb-2">Breve descrição</label>
+        <input type="text" value={descricaoServico} onChange={(e) => setDescricaoServico(e.target.value)} className="w-full p-3 bg-neutral-950 border border-neutral-800 rounded-xl text-sm text-white" />
+      </div>
+    </div>
+
+    <div className="flex justify-between items-center border-t border-neutral-900 pt-6">
+      {idServicoEditando && <button type="button" onClick={resetarFormularioServico} className="text-xs font-bold text-neutral-500 hover:text-white cursor-pointer">Cancelar</button>}
+      <button type="submit" className="px-6 py-3 bg-white text-black text-xs font-black uppercase rounded-xl ml-auto cursor-pointer">
+        {idServicoEditando ? "Atualizar" : "Publicar"}
+      </button>
+    </div>
+  </form>
+</section>
 
         {/* Módulo 4: Galeria */}
         <section className="bg-neutral-900/30 border border-neutral-900 rounded-2xl p-6 space-y-6">

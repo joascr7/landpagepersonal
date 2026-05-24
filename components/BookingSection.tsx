@@ -10,7 +10,7 @@ export default function BookingSection({ cliente, servicos: servicosIniciais = [
   const clienteValido = cliente || {};
   const [servicos] = useState<any[]>(servicosIniciais);
   const [horariosLivres, setHorariosLivres] = useState<string[]>([]);
-  const [dataSelecionada, setDataSelecionada] = useState<Date | undefined>(new Date());
+  const [dataSelecionada, setDataSelecionada] = useState<string | Date | undefined>();
   const [horaSelecionada, setHoraSelecionada] = useState<string>("");
   const [servicoSelecionado, setServicoSelecionado] = useState<string>("");
   const [nome, setNome] = useState("");
@@ -69,9 +69,17 @@ export default function BookingSection({ cliente, servicos: servicosIniciais = [
     setHorariosLivres(horariosPermitidos.filter((h: string) => !horasOcupadas.includes(h)));
   }, [clienteValido.id]);
 
-  useEffect(() => {
-    if (dataSelecionada) atualizarHorariosLivres(dataSelecionada);
-  }, [dataSelecionada, atualizarHorariosLivres]);
+useEffect(() => {
+  if (dataSelecionada) {
+    // Adicionamos 'T00:00:00' para forçar a data a ser tratada 
+    // como meia-noite do dia local, sem aplicar fuso horário.
+    const dataCorrigida = typeof dataSelecionada === 'string' 
+      ? new Date(dataSelecionada + 'T00:00:00') 
+      : dataSelecionada;
+      
+    atualizarHorariosLivres(dataCorrigida);
+  }
+}, [dataSelecionada, atualizarHorariosLivres]);
 
   const handleSolicitarAgendamento = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -120,64 +128,100 @@ if (sucesso) {
 }
 
   return (
-    <section className="max-w-6xl mx-auto px-4 py-16 bg-inherit text-inherit rounded-3xl border border-current/10">
-      <style jsx global>{`
-        .rdp { display: flex; flex-direction: column; align-items: center; user-select: none; }
-        .rdp-table { display: grid !important; grid-template-columns: repeat(7, 40px) !important; gap: 4px !important; justify-content: center !important; }
-        .rdp-head_row, .rdp-row { display: contents !important; }
-        .rdp-head_cell, .rdp-cell { display: flex !important; justify-content: center !important; align-items: center !important; width: 40px !important; height: 40px !important; }
-        .rdp-day { width: 35px !important; height: 35px !important; border-radius: 50% !important; border: none !important; background: transparent !important; cursor: pointer; }
-        .rdp { --rdp-accent-color: ${estiloAtivo.hex} !important; }
-        .rdp-day_selected, .rdp-day_selected:hover { background-color: ${estiloAtivo.hex} !important; color: #000 !important; font-weight: 900 !important; outline: none !important; box-shadow: none !important; }
-        .rdp-day_selected::before { display: none !important; }
-        .rdp-nav_button { color: #333 !important; }
-      `}</style>
+   <section className="max-w-6xl mx-auto px-4 py-16 bg-inherit text-inherit rounded-3xl border border-current/10">
+  <style jsx global>{`
+    .rdp { display: flex; flex-direction: column; align-items: center; user-select: none; }
+    .rdp-table { display: grid !important; grid-template-columns: repeat(7, 1fr) !important; gap: 4px !important; width: 100%; max-width: 300px; }
+    .rdp-head_row, .rdp-row { display: contents !important; }
+    .rdp-head_cell, .rdp-cell { display: flex !important; justify-content: center !important; align-items: center !important; }
+    .rdp-day { 
+      width: 40px !important; height: 40px !important; 
+      border-radius: 12px !important; 
+      border: none !important; 
+      background: transparent !important; 
+      cursor: pointer; 
+      transition: all 0.2s ease;
+      touch-action: manipulation; /* Melhora o toque no mobile */
+    }
+    .rdp-day:hover:not(.rdp-day_selected) { background-color: rgba(0,0,0,0.05) !important; }
+    .rdp-day_selected { 
+      background-color: ${estiloAtivo.hex} !important; 
+      color: #000 !important; 
+      font-weight: 900 !important; 
+      transform: scale(1.1);
+    }
+    .rdp-nav_button { padding: 10px !important; }
+  `}</style>
 
-      <h2 className="text-center text-3xl font-black uppercase mb-12">Escolha seu Horário</h2>
-      <form onSubmit={handleSolicitarAgendamento} className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-        <div className="flex flex-col items-center bg-current/5 p-6 rounded-2xl border border-current/10">
-          <DayPicker 
-            mode="single" 
-            selected={dataSelecionada} 
-            onSelect={setDataSelecionada} 
-            locale={ptBR}
-            disabled={{ before: new Date() }}
-            modifiersStyles={{
-              selected: { backgroundColor: estiloAtivo.hex, color: "#000", fontWeight: "900", border: "2px solid #000", borderRadius: "8px" }
-            }}
-          />
-          <div className="grid grid-cols-3 gap-2 mt-8 w-full">
-            {horariosLivres.map((h) => (
-              <button key={h} type="button" onClick={() => setHoraSelecionada(h)} className={`p-3 text-xs font-bold rounded-lg border ${horaSelecionada === h ? estiloAtivo.botao : "border-current/20"}`}>
-                {h}
-              </button>
+  <h2 className="text-center text-3xl font-black uppercase mb-12">Escolha seu Horário</h2>
+  
+  <form onSubmit={handleSolicitarAgendamento} className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+    {/* Calendário e Horários */}
+    <div className="flex flex-col items-center bg-current/5 p-6 rounded-3xl border border-current/10">
+      <div className="flex flex-col gap-4">
+  <label className="text-xs font-black uppercase opacity-60">Escolha a data do atendimento</label>
+  <input 
+    type="date" 
+    // Garante que o usuário não selecione datas passadas
+    min={new Date().toISOString().split("T")[0]}
+    // Mantemos como string (YYYY-MM-DD), que é o formato nativo do input e o ideal para o banco
+    onChange={(e) => setDataSelecionada(e.target.value)}
+    className="w-full p-4 bg-current/5 border border-current/10 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[var(--primary)] transition-all"
+  />
+</div>
+
+      <div className="grid grid-cols-3 gap-2 mt-8 w-full">
+  {horariosLivres.length > 0 ? (
+    horariosLivres.map((h) => (
+      <button 
+        key={h} 
+        type="button" 
+        onClick={() => setHoraSelecionada(h)} 
+        className={`p-3 text-xs font-bold rounded-lg border ${horaSelecionada === h ? estiloAtivo.botao : "border-current/20"}`}
+      >
+        {h}
+      </button>
+    ))
+  ) : (
+    <div className="col-span-3 py-6 text-center text-xs opacity-50 italic">
+      Não há horários disponíveis para esta data.
+    </div>
+  )}
+</div>
+      </div>
+    
+
+    {/* Formulário */}
+    <div className="flex flex-col gap-6 justify-center">
+      <div className="relative">
+        <label className="text-xs font-black uppercase opacity-60 mb-2 block">Procedimento</label>
+        <div onClick={() => setMenuAberto(!menuAberto)} className="w-full p-4 bg-current/5 border border-current/10 rounded-2xl cursor-pointer text-sm font-bold flex justify-between items-center">
+          {servicos?.find(s => s.id === servicoSelecionado)?.nome || "Selecione o procedimento..."}
+          <span>▼</span>
+        </div>
+        {menuAberto && (
+          <div className="absolute z-50 w-full mt-2 bg-white border border-current/20 rounded-2xl overflow-hidden shadow-2xl text-neutral-900">
+            {servicos?.map((s) => (
+              <div 
+                key={s.id} 
+                onClick={() => { setServicoSelecionado(s.id); setMenuAberto(false); }} 
+                className="p-4 text-sm font-medium hover:bg-neutral-100 cursor-pointer border-b border-neutral-100"
+              >
+                {s.nome}
+              </div>
             ))}
           </div>
-        </div>
+        )}
+      </div>
 
-        <div className="flex flex-col gap-6">
-          <div className="relative">
-            <label className="text-xs font-black uppercase opacity-60 mb-2 block">Procedimento</label>
-            <div onClick={() => setMenuAberto(!menuAberto)} className="w-full p-4 bg-inherit border border-current/10 rounded-xl cursor-pointer text-sm">
-              {servicos?.find(s => s.id === servicoSelecionado)?.nome || "Selecione..."}
-            </div>
-            {menuAberto && (
-              <div className="absolute z-50 w-full mt-2 bg-white border border-current/20 rounded-xl overflow-hidden shadow-2xl text-neutral-900">
-                {servicos?.map((s) => (
-                  <div key={s.id} onClick={() => { setServicoSelecionado(s.id); setMenuAberto(false); }} className="p-4 text-sm hover:bg-neutral-100 cursor-pointer" style={{ backgroundColor: servicoSelecionado === s.id ? estiloAtivo.hex : '', color: servicoSelecionado === s.id ? 'white' : '' }}>
-                    {s.nome}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-          <input className="w-full p-4 bg-inherit border border-current/10 rounded-xl text-sm" placeholder="Nome" onChange={(e) => setNome(e.target.value)} />
-          <input className="w-full p-4 bg-inherit border border-current/10 rounded-xl text-sm" placeholder="WhatsApp" onChange={(e) => setWhatsapp(e.target.value)} />
-          <button type="submit" className={`w-full py-4 rounded-xl font-black uppercase ${estiloAtivo.botao}`}>
-            {carregando ? "ENVIANDO..." : "SOLICITAR AGENDAMENTO"}
-          </button>
-        </div>
-      </form>
-    </section>
+      <input className="w-full p-4 bg-current/5 border border-current/10 rounded-2xl text-sm" placeholder="Seu nome completo" onChange={(e) => setNome(e.target.value)} />
+      <input className="w-full p-4 bg-current/5 border border-current/10 rounded-2xl text-sm" placeholder="WhatsApp" onChange={(e) => setWhatsapp(e.target.value)} />
+      
+      <button type="submit" className={`w-full py-5 rounded-2xl font-black uppercase tracking-widest text-sm transition-transform active:scale-95 ${estiloAtivo.botao}`}>
+        {carregando ? "ENVIANDO..." : "SOLICITAR AGENDAMENTO"}
+      </button>
+    </div>
+  </form>
+</section>
   );
 }
